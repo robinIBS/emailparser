@@ -5,3 +5,110 @@
   content:"*";
   color:red;
 }
+
+
+/****** Dashboard panel div css *****/
+#dashboard_wrapper {
+    padding-top: 20px;
+    padding-bottom: 60px;
+    /*width: 1400px;*/
+    margin: 0px auto;
+}
+.dashboard_panel, .dashboard_panel:hover, .dashboard_panel:focus {
+    margin: 0px 20px 20px 0px;
+    text-decoration: none;
+}
+
+@media (min-width: 1260px) and (max-width: 1439px) {
+  #dashboard_wrapper {
+    /*width: 1220px;*/
+  }
+  .dashboard_inbox_wrapper, .dashboard_inbox_wrapper_placeholder, #dashboard_inbox_add {
+    width: 283px;
+  }
+}
+
+@media (min-width: 1920px) {
+  #dashboard_wrapper {
+    width: 1880px;
+  }
+  .dashboard_inbox_wrapper, .dashboard_inbox_wrapper_placeholder, #dashboard_inbox_add {
+    width: 288px;
+  }
+}
+
+@media (min-width: 1440px) and (max-width: 1919px) {
+  #dashboard_wrapper {
+    width: 1400px;
+  }
+  .dashboard_inbox_wrapper, .dashboard_inbox_wrapper_placeholder, #dashboard_inbox_add {
+    width: 328px;
+  }
+}
+
+.dashboard_inbox_wrapper, .dashboard_inbox_wrapper_placeholder, #dashboard_inbox_add {
+    display: block;
+    float: left;
+    width: 310px;
+    height: 120px;
+    background: #FFF;
+    color: #2c3e50;
+    border: 1px solid #D5D8D9;
+    box-shadow: 0 1px 3px 0 rgba(180,180,180,.2), 0 1px 0 0 rgba(180,180,180,.1);
+    position: relative;
+}
+.dashboard_inbox_move {
+    height: 120px;
+    width: 10px;
+    border-left: 3px solid #637585;
+    background: transparent;
+    margin-top: -1px;
+    margin-left: -1px;
+    cursor: move;
+    display: block;
+    position: absolute;
+    z-index: 2;
+}
+.dashboard_inbox_wrapper .btn {
+    position: absolute;
+    /*display: none;*/
+    z-index: 2;
+    background: #FFF;
+    border: 0px;
+    color: #637585;
+    opacity: 0.8;
+    width: 20px;
+    right: 0px;
+    text-align: center;
+    line-height: 27px;
+}
+/*.dashboard_delete {
+    margin-top: 43px;
+}*/
+.dashboard_inbox_link {
+    display: block;
+    color: #2c3e50;
+    padding: 12px 50px 9px 20px;
+    height: 100px;
+    text-decoration: none;
+}
+.dashboard_inbox_total {
+    position: absolute;
+    margin-top: 50px;
+    font-size: 32px;
+    font-weight: 400;
+    color: #86909A;
+}
+.dashboard_inbox_title {
+    text-transform: uppercase;
+    font-weight: 400;
+    color: #2C3E50;
+    font-size: 15px;
+    line-height: 18px;
+    display: block;
+    word-wrap: break-word;
+}
+.dashboard_inbox_address {
+    line-height: 18px;
+    color: #86909A;
+}

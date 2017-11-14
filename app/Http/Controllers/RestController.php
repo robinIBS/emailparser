@@ -18,7 +18,7 @@ class RestController extends Controller {
      * Function for creating inbox
      */
     public function add_inbox() {
-        
+
 
         $data = Request::json()->all();
 //        echo '<pre>';
@@ -60,7 +60,7 @@ class RestController extends Controller {
         $validator = Validator::make($data, $rules, $messages);
         $error = array();
         if ($validator->fails()) {
-            
+
 //            echo '<pre>';print_r($validator->messages()->getMessages());die;
 //            foreach ($validator->messages()->getMessages() as $field_name => $messages) {
 //
@@ -68,14 +68,13 @@ class RestController extends Controller {
 //                    $error[] = array($field_name => $message);
 //                }
 //            }
-
 //            $error = $validator->errors();
             $error = $validator->getMessageBag()->toArray();
 
 //            return response()->json(array('success' => false, 'message' => json_decode($error)), 200);
             return response()->json(array('success' => false, 'message' => $error), 200);
         } else {
-            
+
 
             $insert = array(
                 'imap_server' => $data['imap_server'],
@@ -103,11 +102,18 @@ class RestController extends Controller {
 
     public function list_inbox($user_id = '') {
         $records = Inbox::where(array('user_id' => $user_id))->get();
-        if (!empty($records->count()>0)) {
+        if (!empty($records->count() > 0)) {
             return response()->json(array('success' => true, 'data' => $records), 200);
         } else {
             return response()->json(array('success' => false, 'message' => 'Record not found'), 400);
         }
     }
+
+    public function view($ID = '') {
+        $rec = Inbox::where(array('_id' => $ID))->get();
+        return response()->json(array('success' => true, 'data' => $rec), 200);
+    }
+
+
 
 }
