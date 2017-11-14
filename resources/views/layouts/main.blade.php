@@ -12,6 +12,7 @@
 
         <!-- Styles -->
         <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+        <link href="{{ asset('css/style.css') }}" rel="stylesheet">
         <link href="{{ asset('datatable/jquery.dataTables.min.css') }}" rel="stylesheet">
         <link href="{{ asset('font-awesome/css/font-awesome.css') }}" rel="stylesheet">
     </head>
@@ -81,10 +82,12 @@
         <script src="{{ asset('js/jquery.min.js') }}"></script>
         <script src="{{ asset('js/app.js') }}"></script>
         <script src="{{ asset('datatable/jquery.dataTables.min.js') }}"></script>
-        <script>
+        <script src="{{ asset('js/jquery.serializeObject.min.js') }}"></script>
+        @stack('scripts')
+<!--        <script>
             $(document).ready(function () {
                 $('.datatable').DataTable();
             });
-        </script>
+        </script>-->
     </body>
 </html>

@@ -1,0 +1,7 @@
+.error-div,.success-div,.loading-img{
+    display: none;
+}
+.form-group.required .control-label:after {
+  content:"*";
+  color:red;
+}

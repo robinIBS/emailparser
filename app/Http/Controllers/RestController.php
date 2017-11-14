@@ -17,7 +17,8 @@ class RestController extends Controller {
     /**
      * Function for creating inbox
      */
-    public function add_inbox(Request $request) {
+    public function add_inbox() {
+        
 
         $data = Request::json()->all();
 //        echo '<pre>';
@@ -68,9 +69,11 @@ class RestController extends Controller {
 //                }
 //            }
 
-            $error = $validator->errors();
+//            $error = $validator->errors();
+            $error = $validator->getMessageBag()->toArray();
 
-            return response()->json(array('success' => false, 'message' => json_decode($error)), 400);
+//            return response()->json(array('success' => false, 'message' => json_decode($error)), 200);
+            return response()->json(array('success' => false, 'message' => $error), 200);
         } else {
 
             $insert = array(
