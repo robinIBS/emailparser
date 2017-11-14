@@ -15,6 +15,10 @@ class EmailParserController extends Controller {
     public function create_inbox() {
         return view('inbox.create_inbox', []);
     }
+    public function list_inbox() {
+        return view('inbox.list_inbox', []);
+    }
+    
 
 //    public function add_user() {
 ////        $user = User::all();

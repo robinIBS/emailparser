@@ -42,16 +42,16 @@ class RestController extends Controller {
         );
         $rules = [
             'imap_server' => 'required',
-            'imap_ssl' => 'required',
-            'imap_port' => 'required',
+            'imap_ssl' => 'required|numeric',
+            'imap_port' => 'required|numeric',
             'smtp_server' => 'required',
-            'smtp_ssl' => 'required',
-            'smtp_tls' => 'required',
-            'smtp_auth' => 'required',
-            'smtp_port_ssl' => 'required',
-            'smtp_port_tls' => 'required',
+            'smtp_ssl' => 'required|numeric',
+            'smtp_tls' => 'required|numeric',
+            'smtp_auth' => 'required|numeric',
+            'smtp_port_ssl' => 'required|numeric',
+            'smtp_port_tls' => 'required|numeric',
             'name' => 'required',
-            'email' => 'required',
+            'email' => 'required|email',
             'password' => 'required',
             'user_id' => 'required',
         ];
@@ -75,6 +75,7 @@ class RestController extends Controller {
 //            return response()->json(array('success' => false, 'message' => json_decode($error)), 200);
             return response()->json(array('success' => false, 'message' => $error), 200);
         } else {
+            
 
             $insert = array(
                 'imap_server' => $data['imap_server'],

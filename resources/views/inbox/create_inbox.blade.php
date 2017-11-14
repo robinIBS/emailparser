@@ -45,8 +45,8 @@
 
                                 <div class="col-md-6">
 
-                                    <input type="radio" name="imap_ssl" checked="checked">Yes
-                                    <input type="radio" name="imap_ssl" >No
+                                    <input type="radio" name="imap_ssl" checked="checked" value="1">Yes
+                                    <input type="radio" name="imap_ssl" value="0">No
                                 </div>
                             </div>
                             <div class="clearfix"></div>
@@ -83,8 +83,8 @@
 
                                 <div class="col-md-6">
 
-                                    <input type="radio" name="smtp_ssl" checked="checked">Yes
-                                    <input type="radio" name="smtp_ssl" >No
+                                    <input type="radio" name="smtp_ssl" checked="checked" value="1">Yes
+                                    <input type="radio" name="smtp_ssl" value="0">No
                                 </div>
                             </div>
                             <div class="clearfix"></div>
@@ -93,8 +93,8 @@
 
                                 <div class="col-md-6">
 
-                                    <input type="radio" name="smtp_tls" checked="checked">Yes
-                                    <input type="radio" name="smtp_tls" >No
+                                    <input type="radio" name="smtp_tls" checked="checked" value="1">Yes
+                                    <input type="radio" name="smtp_tls" value="0">No
                                 </div>
                             </div>
                             <div class="clearfix"></div>
@@ -103,8 +103,8 @@
 
                                 <div class="col-md-6">
 
-                                    <input type="radio" name="smtp_auth" checked="checked">Yes
-                                    <input type="radio" name="smtp_auth" >No
+                                    <input type="radio" name="smtp_auth" checked="checked" value="1">Yes
+                                    <input type="radio" name="smtp_auth" value="0">No
                                 </div>
                             </div>
                             <div class="clearfix"></div>
@@ -149,7 +149,7 @@
                                 <label  class="col-md-4 control-label">Password</label>
 
                                 <div class="col-md-6">
-                                    <input type="text" class="form-control" name="password" id="password">
+                                    <input type="password" class="form-control" name="password" id="password">
                                 </div>
                             </div>
 

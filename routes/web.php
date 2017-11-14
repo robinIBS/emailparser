@@ -17,3 +17,4 @@ Route::get('/', function () {
 
 
 Route::any('create_inbox','EmailParserController@create_inbox');
+Route::any('list_inbox','EmailParserController@list_inbox');

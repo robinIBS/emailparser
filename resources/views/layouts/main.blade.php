@@ -46,8 +46,8 @@
                         <ul class="nav navbar-nav navbar-right">
                             <!-- Authentication Links -->
                             @guest
-                            <!--<li><a href="{{ url('add_user') }}">Add User</a></li>-->
-                            <!--<li><a href="{{ url('list_users') }}">List Users</a></li>-->
+                            <li><a href="{{ url('create_inbox') }}">Create</a></li>
+                            <li><a href="{{ url('list_inbox') }}">List</a></li>
                             
                             @else
                             <li class="dropdown">
