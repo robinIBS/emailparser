@@ -20,3 +20,4 @@ use Illuminate\Http\Request;
 Route::post('add_inbox','RestController@add_inbox');
 Route::get('list_inbox/{user_id}',['uses'=>'RestController@list_inbox']);
 Route::get('view/{ID}',['uses'=>'RestController@view']);
+Route::get('get_rule_view/{view}',['uses'=>'RestController@get_rule_view']);

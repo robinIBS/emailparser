@@ -6,7 +6,7 @@
         <div class="col-md-12">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <a href="{!!url('add_rule')!!}" class="btn btn-success"><i class="fa fa-cog" aria-hidden="true"></i> Add Parsing Rule</a>
+                    <a href="{!!url('add_rule?i='.$id)!!}" class="btn btn-success"><i class="fa fa-cog" aria-hidden="true"></i> Add Parsing Rule</a>
                     <a href="{!!url('emails')!!}" class="btn btn-info"><i class="fa fa-envelope-o" aria-hidden="true"></i> Emails</a>
                     <a href="{!!url('downloads')!!}" class="btn btn-primary"><i class="fa fa-download" aria-hidden="true"></i> File Download</a>
                     <a href="{!!url('integrate')!!}" class="btn btn-primary"><i class="fa fa-share-alt" aria-hidden="true"></i> Integration</a>

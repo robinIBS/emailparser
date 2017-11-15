@@ -60,15 +60,6 @@ class RestController extends Controller {
         $validator = Validator::make($data, $rules, $messages);
         $error = array();
         if ($validator->fails()) {
-
-//            echo '<pre>';print_r($validator->messages()->getMessages());die;
-//            foreach ($validator->messages()->getMessages() as $field_name => $messages) {
-//
-//                foreach ($messages AS $message) {
-//                    $error[] = array($field_name => $message);
-//                }
-//            }
-//            $error = $validator->errors();
             $error = $validator->getMessageBag()->toArray();
 
 //            return response()->json(array('success' => false, 'message' => json_decode($error)), 200);
@@ -114,6 +105,10 @@ class RestController extends Controller {
         return response()->json(array('success' => true, 'data' => $rec), 200);
     }
 
-
+    public function get_rule_view($view='') {
+        //        $html = view('partial._subject_options', compact('stats'))->render();
+        $html = view('partial.'.$view)->render();
+        return response()->json(array('success' => true, 'html' => $html), 200);
+    }
 
 }
