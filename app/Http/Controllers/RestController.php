@@ -8,11 +8,24 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\User;
 use App\Inbox;
+use App\FilterKeywords;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Validator;
 
 class RestController extends Controller {
+
+    public function __construct() {
+        $this->data = Request::json()->all();
+
+//        $this->action_table_arr = array(
+//            'add_filter_keyword' => 'FilterKeywords'
+//        );
+//        
+//        $this->action_rule_arr = array(
+//            'add_filter_keyword' => array('keyword.required')
+//        );
+    }
 
     /**
      * Function for creating inbox
@@ -105,10 +118,79 @@ class RestController extends Controller {
         return response()->json(array('success' => true, 'data' => $rec), 200);
     }
 
-    public function get_rule_view($view='') {
+    public function get_rule_view($view = '') {
         //        $html = view('partial._subject_options', compact('stats'))->render();
-        $html = view('partial.'.$view)->render();
+        $html = view('partial.' . $view)->render();
         return response()->json(array('success' => true, 'html' => $html), 200);
+    }
+
+    public function keyword() {
+//        print_r($this->data);
+//        die;
+        $message = '';
+
+        //validation
+        $rules = [
+            'action' => 'required'
+        ];
+        $messages = [
+            'action.required' => 'Action variable missing.',
+        ];
+
+        if ($this->data['action'] == 'add') {
+            $rules['keyword'] = 'required|unique:filter_keywords';
+            $rules['search_in'] = 'required';
+
+            $messages['keyword.required'] = 'Please Enter keyword';
+            $messages['search_in.required'] = 'Please choose Search In option.';
+        }
+
+        $status = 0;
+        $validator = Validator::make($this->data, $rules, $messages);
+        $error = array();
+        if ($validator->fails()) {
+            $error = $validator->getMessageBag()->toArray();
+            return response()->json(array('success' => false, 'message' => $error), 200);
+        } else {
+            foreach ($this->data['search_in'] as $val) {
+                $post[] = array(
+                    'keyword' => $this->data['keyword'],
+                    'search_in' => $val,
+                );
+            }
+
+            switch (strtolower($this->data['action'])) {
+                case 'add':
+//                    $status = FilterKeywords::insert($post);
+                    $message = "Keyword Added";
+                    break;
+                case 'update':
+                    $status = FilterKeywords::where(array('keyword' => $this->data['keyword']))->delete();
+                    $message = "Keyword Updated";
+                    break;
+                case 'list':
+                    $list = FilterKeywords::all();
+                    return response()->json(array('success' => true, 'data' => $list), 200);
+                    break;
+                case 'delete':
+                    $status = FilterKeywords::where(array('keyword' => $this->data['keyword']))->delete();
+                    $message = "Keyword Deleted";
+                    return response()->json(array('success' => true, 'message' => $message), 200);
+                    break;
+            }
+
+            //insert record
+            $status = FilterKeywords::insert($post);
+            if ($status) {
+                return response()->json(array('success' => true, 'message' => $message), 200);
+            } else {
+                return response()->json(array('Something went wrong plese try again!'), 400);
+            }
+        }
+    }
+
+    public function response() {
+        
     }
 
 }
