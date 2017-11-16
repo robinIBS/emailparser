@@ -9,9 +9,13 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\User;
 use App\Inbox;
 use App\FilterKeywords;
+use App\FilterGroups;
+use App\FilterGroupKeywords;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Validator;
+use FunctionHelper;
+use Illuminate\Support\Facades\DB;
 
 class RestController extends Controller {
 
@@ -125,8 +129,9 @@ class RestController extends Controller {
     }
 
     public function keyword() {
-//        print_r($this->data);
+//        print_r(FunctionHelper::get_rec('filter_keywords',array('matching_field'=>'keyword','value'=>'test1')));
 //        die;
+
         $message = '';
 
         //validation
@@ -173,9 +178,15 @@ class RestController extends Controller {
                     return response()->json(array('success' => true, 'data' => $list), 200);
                     break;
                 case 'delete':
-                    $status = FilterKeywords::where(array('keyword' => $this->data['keyword']))->delete();
-                    $message = "Keyword Deleted";
-                    return response()->json(array('success' => true, 'message' => $message), 200);
+                    //check the keyword exit or not
+                    if (FunctionHelper::get_rec('filter_keywords', array('matching_field' => 'keyword', 'value' => $this->data['keyword']))->count() == 0) {
+                        return response()->json(array('success' => false, 'message' => 'Keyword not exist'), 200);
+                    } else {
+
+                        $status = FilterKeywords::where(array('keyword' => $this->data['keyword']))->delete();
+                        $message = "Keyword Deleted";
+                        return response()->json(array('success' => true, 'message' => $message), 200);
+                    }
                     break;
             }
 
@@ -189,8 +200,140 @@ class RestController extends Controller {
         }
     }
 
-    public function response() {
-        
+    public function keyword_group() {
+//        print_r(FunctionHelper::get_rec('filter_keywords',array('matching_field'=>'keyword','value'=>'test1')));
+//        die;
+
+        $message = '';
+
+        //validation
+        $rules = [
+            'action' => 'required'
+        ];
+        $messages = [
+            'action.required' => 'Action variable missing.',
+        ];
+
+        if ($this->data['action'] == 'add') {
+            $rules['name'] = 'required|unique:filter_groups';
+            $rules['keyword'] = 'required';
+
+            $messages['name.required'] = 'Please Enter name.';
+            $messages['keyword.required'] = 'Please Select Keywords';
+        }
+        if ($this->data['action'] == 'update' || $this->data['action'] == 'delete') {
+            $rules['group_id'] = 'required';
+            $messages['group_id.required'] = 'Please Select Group.';
+        }
+
+
+
+        $status = 0;
+        $validator = Validator::make($this->data, $rules, $messages);
+        $error = array();
+        if ($validator->fails()) {
+            $error = $validator->getMessageBag()->toArray();
+            return response()->json(array('success' => false, 'message' => $error), 200);
+        } else {
+            if (strtolower($this->data['action']) == 'add' || strtolower($this->data['action']) == 'update') {
+                $post['name'] = $this->data['name'];
+            }
+//            DB::beginTransaction();
+            try {
+                switch (strtolower($this->data['action'])) {
+                    case 'add':
+//                    $status = FilterKeywords::insert($post);
+                        $message = "Group Created";
+                        break;
+                    case 'update':
+                        //delete keywords
+                        if (FunctionHelper::get_rec('filter_groups', array('matching_field' => '_id', 'value' => $this->data['group_id']))->count() == 0) {
+                            return response()->json(array('success' => false, 'message' => 'Group not exist'), 200);
+                        } else {
+                            $deleteGroup_key = FilterGroupKeywords::where(array('group_id' => $this->data['group_id']))->delete();
+                            $deleteGroup = FilterGroups::where(array('_id' => $this->data['group_id']))->delete();
+
+                            $message = "Group Updated";
+                        }
+                        break;
+                    case 'list':
+
+                        $list = FilterGroups::raw(function($collection) {
+                                    return $collection->aggregate(
+                                                    [
+                                                            [
+                                                            '$lookup' => [
+                                                                'as' => 'keywords',
+                                                                'from' => 'filter_group_keywords',
+                                                                'foreignField' => 'group_id',
+                                                                'localField' => '_id'
+                                                            ]
+                                                        ]
+                                                    ]
+                                    );
+                                });
+
+
+                        return response()->json(array('success' => true, 'data' => $list), 200);
+                        break;
+                    case 'delete':
+
+                        if (FunctionHelper::get_rec('filter_groups', array('matching_field' => '_id', 'value' => $this->data['group_id']))->count() == 0) {
+                            return response()->json(array('success' => false, 'message' => 'Group not exist'), 200);
+                        } else {
+                            //delete keywords
+                            $deleteGroup_key = FilterGroupKeywords::where(array('group_id' => $this->data['group_id']))->delete();
+                            $deleteGroup = FilterGroups::where(array('_id' => $this->data['group_id']))->delete();
+
+                            if ($deleteGroup) {
+                                $message = "Group Deleted";
+                                return response()->json(array('success' => true, 'message' => $message), 200);
+                            } else {
+                                return response()->json(array('Something went wrong plese try again!'), 400);
+                            }
+                        }
+                        break;
+                }
+
+                //insert record
+                $status = FilterGroups::insertGetId($post);
+                if ($status) {
+
+                    //insert the group keywords
+
+                    foreach ($this->data['keyword'] as $key) {
+                        $post_array[] = [
+                            'group_id' => $status,
+                            'keyword_id' => $key,
+                            'created_at' => date('Y-m-d H:i:s'),
+                        ];
+                    }
+
+                    $insert_status = FilterGroupKeywords::insert($post_array);
+
+                    if ($insert_status) {
+
+                        //commit the transaction if all fine
+//                        DB::commit();
+
+                        return response()->json(array('success' => true, 'message' => $message), 200);
+                    } else {
+                        return response()->json(array('Something went wrong plese try again!'), 400);
+
+                        //Rollback the transactions if fail 
+//                        DB::rollback();
+                    }
+                } else {
+                    return response()->json(array('Something went wrong plese try again!'), 400);
+                    //Rollback the transactions if fail
+//                    DB::rollback();
+                }
+            } catch (Exception $e) {
+                //failed logic here
+//                DB::rollback();
+                throw $e;
+            }
+        }
     }
 
 }
