@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Validator;
 use FunctionHelper;
 use Illuminate\Support\Facades\DB;
+use PhpImap\Mailbox;
 
 class RestController extends Controller {
 
@@ -334,6 +335,25 @@ class RestController extends Controller {
                 throw $e;
             }
         }
+    }
+
+    public function imap() {
+        // 4. argument is the directory into which attachments are to be saved:
+        $mailbox = new Mailbox('{imap.gmail.com:993/imap/ssl}INBOX', 'robin@interbitsolutions.com', 'user121#', __DIR__);
+
+// Read all messaged into an array:
+        $mailsIds = $mailbox->searchMailbox('SUBJECT "Reset your password"');
+        if (!$mailsIds) {
+            die('Mailbox is empty');
+        }
+//        echo '<pre>';
+//        print_r($mailsIds);die;
+// Get the first message and save its attachment(s) to disk:
+        $mail = $mailbox->getMail($mailsIds[0]);
+        echo '<pre>';
+        print_r($mail);die;
+        echo "\n\nAttachments:\n";
+        print_r($mail->getAttachments());
     }
 
 }

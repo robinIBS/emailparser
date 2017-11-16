@@ -141,6 +141,7 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
+        Webklex\IMAP\Providers\LaravelServiceProvider::class,
         /*
          * Package Service Providers...
          */

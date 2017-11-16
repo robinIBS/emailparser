@@ -16,6 +16,7 @@
         <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
         <link href="{{ asset('datatable/jquery.dataTables.min.css') }}" rel="stylesheet">
         <link href="{{ asset('font-awesome/css/font-awesome.css') }}" rel="stylesheet">
+        <link href="{{ asset('css/jquery-ui.css') }}" rel="stylesheet">
     </head>
     <body>
         <div id="app">
@@ -49,7 +50,7 @@
                             @guest
                             <li><a href="{{ url('create_inbox') }}">Create</a></li>
                             <li><a href="{{ url('list_inbox') }}">List</a></li>
-                            
+
                             @else
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true">
@@ -84,12 +85,16 @@
         <script src="{{ asset('js/app.js') }}"></script>
         <script src="{{ asset('datatable/jquery.dataTables.min.js') }}"></script>
         <script src="{{ asset('js/jquery.serializeObject.min.js') }}"></script>
+        <script src="{{ asset('js/script.js') }}"></script>
+        <script src="{{ asset('js/jquery-ui.js') }}"></script>
         <!--<script src="{{ asset('js/bootstrap.min.js') }}"></script>-->
         @stack('scripts')
-<!--        <script>
+        <script>
             $(document).ready(function () {
-                $('.datatable').DataTable();
+                $(function () {
+                    $(".datepicker").datepicker();
+                });
             });
-        </script>-->
+        </script>
     </body>
 </html>
