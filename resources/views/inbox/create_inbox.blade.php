@@ -5,18 +5,18 @@
     <div class="row">
         <div class="col-md-12">
             <!--**** Display the error message ****-->
-            <div class="alert alert-danger alert-dismissable error-div ">
-                <!--<a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>-->
+<!--            <div class="alert alert-danger alert-dismissable error-div ">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
                 <a class="close" onclick="$('.error-div').hide()">×</a> 
                 <strong>Danger!</strong> <p id="errors"></p>
             </div>
 
 
             <div class="alert alert-success alert-dismissable success-div">
-                <!--<a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>-->
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
                 <a class="close" onclick="$('.success-div').hide()">×</a>
                 <strong>Success!</strong> <p id="success-msg"></p>
-            </div>
+            </div>-->
 
             <div class="panel panel-default">
                 <div class="panel-heading">Add Inbox Details</div>

@@ -1,32 +1,45 @@
 //$(document).ready(function () {
 
-    function list_inbox(id='') {
-        $.ajax({
-            type: 'GET',
-            dataType: 'json',
-            url: 'api/list_inbox/1',
+function ajax_request(method, action, dataType, data = {},callback) {
+    $.ajax({
+        type: method,
+        dataType: dataType,
+        url: action,
 //                async: false,
-            contentType: "application/json; charset=utf-8",
-            beforeSend: function () {
+        data: data,
+        contentType: "application/json; charset=utf-8",
+        beforeSend: function () {
 
-            },
-            success: function (data) {
-                console.log(data);
-//                    var sr = 1;
-                var options = '<option value="">Select Email</option>';
-                $.each(data.data, function (index, value) {
-                    
-                    options+='<option value="'+value._id+'">'+value.name+'('+value.email+')</option>';
-//                        var view = 
-                    //adding the row
-//                    table.row.add([sr, value.name, value.email, value.imap_server, (value.imap_ssl == 1) ? 'Yes' : 'No', value.imap_port, value.smtp_server, (value.smtp_ssl == 1) ? 'Yes' : 'No', (value.smtp_tls == 1) ? 'Yes' : 'No', (value.smtp_auth == 1) ? 'Yes' : 'No', value.smtp_port_ssl, value.smtp_port_tls])
-//                            .draw();
-//                        sr++;
-                });
+        },
+        success: function (data) {
+            callback(data);
+        }
+    });
+//    return response;
+}
 
-                $('#'+id).html(options);
-            }
-        });
-    }
+function search_emails(id = '', criteria) {
+//    $('.ajax-loader').css('display','block');
+    $.ajax({
+        type: 'POST',
+        dataType: 'json',
+        url: 'api/search_emails',
+//        async: true,
+        contentType: "application/json; charset=utf-8",
+        beforeSend: function () {
+            $('.ajax-loader').css('display', 'block');
+            $('#errors').html('');
+            $('#success-msg').html('');
+        },
+        success: function (data) {
+            console.log(data);
+        },
+        complete: function () {
+            $('.ajax-loader').css('display', 'none');
+        }
+    });
+}
 
-//});
+function append_error_messages() {
+
+}

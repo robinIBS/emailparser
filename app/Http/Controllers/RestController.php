@@ -110,6 +110,7 @@ class RestController extends Controller {
     }
 
     public function list_inbox($user_id = '') {
+
         $records = Inbox::where(array('user_id' => $user_id))->get();
         if (!empty($records->count() > 0)) {
             return response()->json(array('success' => true, 'data' => $records), 200);
@@ -158,11 +159,13 @@ class RestController extends Controller {
             $error = $validator->getMessageBag()->toArray();
             return response()->json(array('success' => false, 'message' => $error), 200);
         } else {
-            foreach ($this->data['search_in'] as $val) {
-                $post[] = array(
-                    'keyword' => $this->data['keyword'],
-                    'search_in' => $val,
-                );
+            if ($this->data['action'] == 'add' || $this->data['action'] == 'update') {
+                foreach ($this->data['search_in'] as $val) {
+                    $post[] = array(
+                        'keyword' => $this->data['keyword'],
+                        'search_in' => $val,
+                    );
+                }
             }
 
             switch (strtolower($this->data['action'])) {
@@ -337,23 +340,46 @@ class RestController extends Controller {
         }
     }
 
-    public function imap() {
+    public function search_emails() {
         // 4. argument is the directory into which attachments are to be saved:
-        $mailbox = new Mailbox('{imap.gmail.com:993/imap/ssl}INBOX', 'robin@interbitsolutions.com', 'user121#', __DIR__);
+        $mailbox = new Mailbox('{' . env('IMAP_HOST') . '/imap/' . env('IMAP_ENCRYPTION') . '}INBOX', env('IMAP_USERNAME'), env('IMAP_PASSWORD'), __DIR__);
 
-// Read all messaged into an array:
-        $mailsIds = $mailbox->searchMailbox('SUBJECT "Reset your password"');
-        if (!$mailsIds) {
-            die('Mailbox is empty');
-        }
+
+
+        $rules = [
+            'filter_email_select_list' => 'required',
+        ];
+        $messages = [
+            'filter_email_select_list.required' => 'Please Select Email Account',
+        ];
+
+//        $validator = Validator::make(Input::all(), $rules, $messages);
+        $validator = Validator::make($this->data, $rules, $messages);
+        $error = array();
+        if ($validator->fails()) {
+            $error = $validator->getMessageBag()->toArray();
+
+//            return response()->json(array('success' => false, 'message' => json_decode($error)), 200);
+            return response()->json(array('success' => false, 'message' => $error), 200);
+        } else {
+            //creating the criteria
+//        if(isset($this->data['']))
+            // Read all messaged into an array:
+            $mailsIds = $mailbox->searchMailbox('SUBJECT "Reset your password"');
+            if (!$mailsIds) {
+                die('Mailbox is empty');
+            }
+
+            // Get the first message and save its attachment(s) to disk:
+            $mail = $mailbox->getMail($mailsIds[0]);
 //        echo '<pre>';
-//        print_r($mailsIds);die;
-// Get the first message and save its attachment(s) to disk:
-        $mail = $mailbox->getMail($mailsIds[0]);
-        echo '<pre>';
-        print_r($mail);die;
-        echo "\n\nAttachments:\n";
-        print_r($mail->getAttachments());
+//        print_r($mail);die;
+
+            return response()->json(array('success' => true, 'data' => $mail), 200);
+
+            echo "\n\nAttachments:\n";
+            print_r($mail->getAttachments());
+        }
     }
 
 }

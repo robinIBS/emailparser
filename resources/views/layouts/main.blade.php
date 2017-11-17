@@ -20,6 +20,12 @@
     </head>
     <body>
         <div id="app">
+            <div class="ajax-loader">
+                <img src="{{ url('images/ajax-loader.gif') }}" class="img-responsive" />
+            </div>
+
+
+
             <nav class="navbar navbar-default navbar-static-top">
                 <div class="container">
                     <div class="navbar-header">
@@ -76,6 +82,21 @@
                     </div>
                 </div>
             </nav>
+            <div class="container">
+                <!--**** Display the error message ****-->
+                <div class="alert alert-danger alert-dismissable error-div ">
+                    <!--<a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>-->
+                    <a class="close" onclick="$('.error-div').hide()">×</a> 
+                    <strong>Error!</strong> <p id="errors"></p>
+                </div>
+
+
+                <div class="alert alert-success alert-dismissable success-div">
+                    <!--<a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>-->
+                    <a class="close" onclick="$('.success-div').hide()">×</a>
+                    <strong>Success!</strong> <p id="success-msg"></p>
+                </div>
+            </div>
 
             @yield('content')
         </div>
@@ -90,11 +111,11 @@
         <!--<script src="{{ asset('js/bootstrap.min.js') }}"></script>-->
         @stack('scripts')
         <script>
-            $(document).ready(function () {
-                $(function () {
-                    $(".datepicker").datepicker();
-                });
-            });
+                        $(document).ready(function () {
+                            $(function () {
+                                $(".datepicker").datepicker();
+                            });
+                        });
         </script>
     </body>
 </html>
