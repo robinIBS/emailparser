@@ -4,20 +4,6 @@
 <div class="container">
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
-            <!--**** Display the error message ****-->
-            <div class="alert alert-danger alert-dismissable error-div ">
-                <!--<a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>-->
-                <a class="close" onclick="$('.error-div').hide()">×</a> 
-                <strong>Danger!</strong> <p id="errors"></p>
-            </div>
-
-
-            <div class="alert alert-success alert-dismissable success-div">
-                <!--<a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>-->
-                <a class="close" onclick="$('.success-div').hide()">×</a>
-                <strong>Success!</strong> <p id="success-msg"></p>
-            </div>
-
             <div class="panel panel-default">
                 <div id="field_detail_content_pane">
                     <div class="panel-heading">Add Filter Keywords</div>
@@ -38,9 +24,18 @@
 
                             <div class="col-md-6">
                                 <select class="form-control" multiple="true" name="search_in[]">
-                                    <option value="subject">subject</option>
-                                    <option value="body">body</option>
+                                    <option value="SUBJECT">SUBJECT</option>
+                                    <option value="BODY">BODY</option>
+                                    <option value="FROM">FROM</option>
+                                    <option value="TO">TO</option>
                                 </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-6 col-md-offset-4">
+                                <button type="submit" class="btn btn-primary" id="submit">
+                                    Submit
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -53,37 +48,27 @@
 @push('scripts')
 <script>
     $(document).ready(function () {
+        $("#create-rule-form").submit(function (s) {
+            s.preventDefault();
+            var arr = $("#create-rule-form").serializeObject();
+            arr['action'] = 'add';
 
-//        $("#select_source_subject,.text-filter-options").on("click", function () {
-        $("body").delegate("#select_source_subject,.text-filter-options", "click", function () {
-            var view = $(this).attr('value');
-            $.ajax({
-                type: 'GET',
-                dataType: 'json',
-                url: 'api/get_rule_view/' + view,
-                async: false,
-                contentType: "application/json; charset=utf-8",
-                beforeSend: function () {
-
-                },
-                success: function (data) {
-                    console.log(data);
-                    if (view == '_subject_options') {
-                        $('#rule_wrapper_div').html(data.html);
-
-                    } else {
-                        $('#rule_filter_div').append(data.html);
+            //ADD Filter
+            ajax_request('POST', 'api/keyword', 'json', JSON.stringify(arr), function (d) {
+                if (d.success == false) {
+                    for (var error in d.message) {
+                        $('#errors').append(data.message[error] + '<br>');
                     }
-
+                    $('.error-div').show();
+                } else if (d.success == true) {
+                    $('#success-msg').append(d.message);
+                    $('.success-div').show();
+                    $("#create-rule-form")[0].reset();
                 }
+
             });
-        });
 
-        //remove the filter box
-        $("body").delegate(".remove_filter", "click", function () {
-            $(this).parent().parent().remove();
         });
-
     });
 </script>
 @endpush

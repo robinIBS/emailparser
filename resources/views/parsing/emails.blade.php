@@ -8,7 +8,7 @@
                 <div class="panel-heading">Emails</div>
                 @include('partial._filters')
                 <div class="panel-body table-responsive">
-                    
+
                     <table class="table table-bordered datatable" id="inbox_table">
                         <thead>
                             <tr>
@@ -20,6 +20,9 @@
                                 </th>
                                 <th>
                                     Subject
+                                </th>
+                                <th>
+                                    Action
                                 </th>
                             </tr>
 

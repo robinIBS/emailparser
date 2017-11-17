@@ -1,11 +1,11 @@
 <div class="container filter-box">
     <div class="row padding-25px">
-        {{ Form::open(array('url' => 'add_user','class'=>'form-inline','id'=>'create-inbox-form')) }}
+        {{ Form::open(array('url' => 'add_user','class'=>'form-inline','id'=>'search_email_form')) }}
         <div class="col-md-12">
             <div class="form-group required">
                 <label class=" control-label">Inbox</label>
                 <!--<div class="col-md-2">-->
-                <select class="form-control" id="filter_email_select_list" name="filter_email_select_list">
+                <select class="form-control" id="filter_email_select_list" name="filter_email">
                     <option value="">Select Email</option>
                 </select>
                 <!--</div>-->
@@ -13,7 +13,7 @@
             <div class="form-group requireds">
                 <label class=" control-label">Filter</label>
                 <!--<div class="col-md-2">-->
-                <select class="form-control" id="filter_select_list" name="filter_select_list">
+                <select class="form-control" id="filter_select_list" name="filter_keyword">
                     <option value="">Select Filter</option>
                 </select>
                 <!--</div>-->
@@ -21,7 +21,7 @@
             <div class="form-group required">
                 <label class=" control-label">Filter Group</label>
                 <!--<div class="col-md-2">-->
-                <select class="form-control" id="filter_group_select_list" name="filter_group_select_list">
+                <select class="form-control" id="filter_group_select_list" name="filter_group">
                     <option value="">Select Filter Group</option>
                 </select>
                 <!--</div>-->
@@ -58,13 +58,39 @@
 //        list_inbox('filter_email_select_list');
 
 
-        $("body").delegate("#filter_email_select_list", "change", function () {
-            if ($(this).val() != '') {
-                search_emails();
-            }
+//        $("body").delegate("#filter_email_select_list", "change", function () {
+        $("#search_email_form").submit(function (s) {
+
+            s.preventDefault();
+            var arr = $("#search_email_form").serializeObject();
+
+//            search_emails();
+
+
+            ajax_request('POST', 'api/search_emails', 'json', JSON.stringify(arr), function (d) {
+//                console.log(d);
+                var sr;
+                sr = 1;
+                var table = $('#inbox_table').DataTable({
+                    destroy: true,
+                });
+                $.each(d.data, function (index, value) {
+//                    alert(value.subject);
+                    table.row.add([
+                        sr,
+                        value.fromAddress,
+                        value.subject,
+                        ''
+                    ]).draw(false);
+                    sr++;
+                });
+
+            });
+
+
         });
-        
-        
+
+
 //        //fill the inbox dropdown
         ajax_request('GET', 'api/list_inbox/1', 'json', '{}', function (d) {
             var options = '<option value="">Select Email</option>';
@@ -84,7 +110,7 @@
             $('#filter_select_list').html(options);
 
         });
-        
+
         //fill the filter group dropdown
         ajax_request('POST', 'api/keyword_group', 'json', '{"action":"list"}', function (d) {
             var options = '<option value="">Select Filter Group</option>';

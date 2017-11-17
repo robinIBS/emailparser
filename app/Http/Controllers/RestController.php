@@ -160,12 +160,19 @@ class RestController extends Controller {
             return response()->json(array('success' => false, 'message' => $error), 200);
         } else {
             if ($this->data['action'] == 'add' || $this->data['action'] == 'update') {
-                foreach ($this->data['search_in'] as $val) {
+                
                     $post[] = array(
                         'keyword' => $this->data['keyword'],
-                        'search_in' => $val,
+                        'search_in' => implode(',', $this->data['search_in']),
                     );
-                }
+//                    print_r($post);die;
+                    
+//                foreach ($this->data['search_in'] as $val) {
+//                    $post[] = array(
+//                        'keyword' => $this->data['keyword'],
+//                        'search_in' => strtoupper($val),
+//                    );
+//                }
             }
 
             switch (strtolower($this->data['action'])) {
@@ -341,16 +348,18 @@ class RestController extends Controller {
     }
 
     public function search_emails() {
+//        print_r($this->data);
+//        die;
         // 4. argument is the directory into which attachments are to be saved:
-        $mailbox = new Mailbox('{' . env('IMAP_HOST') . '/imap/' . env('IMAP_ENCRYPTION') . '}INBOX', env('IMAP_USERNAME'), env('IMAP_PASSWORD'), __DIR__);
+
 
 
 
         $rules = [
-            'filter_email_select_list' => 'required',
+            'filter_email' => 'required',
         ];
         $messages = [
-            'filter_email_select_list.required' => 'Please Select Email Account',
+            'filter_email.required' => 'Please Select Email Account',
         ];
 
 //        $validator = Validator::make(Input::all(), $rules, $messages);
@@ -362,24 +371,60 @@ class RestController extends Controller {
 //            return response()->json(array('success' => false, 'message' => json_decode($error)), 200);
             return response()->json(array('success' => false, 'message' => $error), 200);
         } else {
+            $search_criteria = '';
             //creating the criteria
 //        if(isset($this->data['']))
-            // Read all messaged into an array:
-            $mailsIds = $mailbox->searchMailbox('SUBJECT "Reset your password"');
-            if (!$mailsIds) {
-                die('Mailbox is empty');
+            //get the email details
+
+            $account = Inbox::where(array('_id' => $this->data['filter_email']))->first();
+            if ($account->count() == 0) {
+                return response()->json(array('success' => false, 'message' => 'Email account not found'), 404);
+            } else {
+                $mailbox = $this->ImapInit($account->imap_server, $account->imap_port, ($account->imap_ssl == 1) ? 'ssl' : '', $account->email, decrypt($account->password));
+
+                //created search criteria for filters
+
+                if (!empty($this->data['filter_keyword'])) {
+                    $keyword = FilterKeywords::where(array('_id' => $this->data['filter_keyword']))->first();
+                    $explode = explode(',', $keyword->search_in);
+                    $suffixed_array = preg_filter('/$/', ' "'.$keyword->keyword.'"', $explode);
+                    
+                    $search_criteria = implode(' ', $suffixed_array);
+                    
+                }
+                
+                //created search criteria for filter group
+
+//                if (!empty($this->data['filter_group'])) {
+//                    $keyword = FilterGroups::where(array('_id' => $this->data['filter_group']))->first();
+//                    $explode = explode(',', $keyword->search_in);
+//                    $suffixed_array = preg_filter('/$/', ' "'.$keyword->keyword.'"', $explode);
+//                    
+//                    $search_criteria = implode(' ', $suffixed_array);
+//                    
+//                }
+
+                // Read all messaged into an array:
+//                $mailsIds = $mailbox->searchMailbox('FROM "support@team.mailparser.io"');
+                $mailsIds = $mailbox->searchMailbox($search_criteria);
+                if (!$mailsIds) {
+                    return response()->json(array('success' => false, 'message' => 'Mailbox is empty'), 404);
+                } else {
+                    // Get the first message and save its attachment(s) to disk:
+                    $mail[] = $mailbox->getMail($mailsIds[0]);
+
+                    return response()->json(array('success' => true, 'data' => $mail), 200);
+
+                    echo "\n\nAttachments:\n";
+                    print_r($mail->getAttachments());
+                }
             }
-
-            // Get the first message and save its attachment(s) to disk:
-            $mail = $mailbox->getMail($mailsIds[0]);
-//        echo '<pre>';
-//        print_r($mail);die;
-
-            return response()->json(array('success' => true, 'data' => $mail), 200);
-
-            echo "\n\nAttachments:\n";
-            print_r($mail->getAttachments());
         }
+    }
+
+    public function ImapInit($host, $port, $encr = 'ssl', $username, $password) {
+        $mailbox = new Mailbox('{' . $host . ':' . $port . '/imap/' . $encr . '}INBOX', $username, $password, __DIR__);
+        return $mailbox;
     }
 
 }
