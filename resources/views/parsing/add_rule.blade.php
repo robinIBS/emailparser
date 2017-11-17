@@ -19,6 +19,12 @@
                             </div>
                         </div>
                         <div class="form-group required">
+                            <label class="col-md-2 control-label">Group Name</label>
+                            <div class="col-md-6">
+                                <input type="text" name="group_name" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group required">
                             <label class="col-md-2 control-label">Keyword</label>
 
                             <div class="col-md-6">
