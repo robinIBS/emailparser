@@ -10,8 +10,8 @@
                 </select>
                 <!--</div>-->
             </div>
-            <div class="form-group requireds">
-                <label class=" control-label">Filter</label>
+            <div class="form-group">
+                <label class="control-label">Filter</label>
                 <!--<div class="col-md-2">-->
                 <select class="form-control" id="filter_select_list" name="filter_keyword">
                     <option value="">Select Filter</option>
@@ -63,24 +63,24 @@
 
             s.preventDefault();
             var arr = $("#search_email_form").serializeObject();
-
+            var table = $('#inbox_table').DataTable({
+                destroy: true,
+            });
 //            search_emails();
-
+            table.clear().draw();
 
             ajax_request('POST', 'api/search_emails', 'json', JSON.stringify(arr), function (d) {
 //                console.log(d);
                 var sr;
                 sr = 1;
-                var table = $('#inbox_table').DataTable({
-                    destroy: true,
-                });
+
                 $.each(d.data, function (index, value) {
 //                    alert(value.subject);
                     table.row.add([
                         sr,
                         value.fromAddress,
                         value.subject,
-                        ''
+                        '<i class="fa fa-eye" aria-hidden="true"></i>'
                     ]).draw(false);
                     sr++;
                 });

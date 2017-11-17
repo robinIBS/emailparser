@@ -131,9 +131,6 @@ class RestController extends Controller {
     }
 
     public function keyword() {
-//        print_r(FunctionHelper::get_rec('filter_keywords',array('matching_field'=>'keyword','value'=>'test1')));
-//        die;
-
         $message = '';
 
         //validation
@@ -160,13 +157,17 @@ class RestController extends Controller {
             return response()->json(array('success' => false, 'message' => $error), 200);
         } else {
             if ($this->data['action'] == 'add' || $this->data['action'] == 'update') {
+                $explode_keywords = explode(',', $this->data['keyword']); 
                 
-                    $post[] = array(
-                        'keyword' => $this->data['keyword'],
-                        'search_in' => implode(',', $this->data['search_in']),
-                    );
-//                    print_r($post);die;
+                foreach ($explode_keywords as $val) {
                     
+                }
+                
+                $post[] = array(
+                    'keyword' => $this->data['keyword'],
+                    'search_in' => implode(',', $this->data['search_in']),
+                );
+//                    print_r($post);die;
 //                foreach ($this->data['search_in'] as $val) {
 //                    $post[] = array(
 //                        'keyword' => $this->data['keyword'],
@@ -387,14 +388,12 @@ class RestController extends Controller {
                 if (!empty($this->data['filter_keyword'])) {
                     $keyword = FilterKeywords::where(array('_id' => $this->data['filter_keyword']))->first();
                     $explode = explode(',', $keyword->search_in);
-                    $suffixed_array = preg_filter('/$/', ' "'.$keyword->keyword.'"', $explode);
-                    
-                    $search_criteria = implode(' ', $suffixed_array);
-                    
+                    $suffixed_array = preg_filter('/$/', ' "' . $keyword->keyword . '"', $explode);
+//                    print_r($suffixed_array);die;
+//                    $search_criteria = implode(' OR ', $suffixed_array);
                 }
-                
-                //created search criteria for filter group
 
+                //created search criteria for filter group
 //                if (!empty($this->data['filter_group'])) {
 //                    $keyword = FilterGroups::where(array('_id' => $this->data['filter_group']))->first();
 //                    $explode = explode(',', $keyword->search_in);
@@ -403,20 +402,37 @@ class RestController extends Controller {
 //                    $search_criteria = implode(' ', $suffixed_array);
 //                    
 //                }
-
                 // Read all messaged into an array:
-//                $mailsIds = $mailbox->searchMailbox('FROM "support@team.mailparser.io"');
-                $mailsIds = $mailbox->searchMailbox($search_criteria);
+//                $mailsIds = $mailbox->searchMailbox('OR BODY ("support@team.mailparser.io") OR (SUBJECT "support@team.mailparser.io") OR (FROM "support@team.mailparser.io") OR (TO "support@team.mailparser.io")');
+//                echo $search_criteria;die;
+                //Apply the search criteria one by one
+                $emails = array();
+                foreach ($suffixed_array as $search) {
+//                    $emails_ = imap_search($inbox, $search);
+                    $emails_ = $mailbox->searchMailbox($search);
+                    if ($emails_)
+                        $emails = array_merge($emails, $emails_);
+                }
+                $mailsIds = array_unique($emails);
+//                echo '<pre>';
+//                
+//                print_r($emails);die;
+//                $mailsIds = $mailbox->searchMailbox($search_criteria);
                 if (!$mailsIds) {
-                    return response()->json(array('success' => false, 'message' => 'Mailbox is empty'), 404);
+                    return response()->json(array('success' => false, 'message' => 'Mailbox is empty'), 200);
                 } else {
                     // Get the first message and save its attachment(s) to disk:
-                    $mail[] = $mailbox->getMail($mailsIds[0]);
+
+                    foreach ($mailsIds as $IDS) {
+                        $mail[] = $mailbox->getMail($IDS);
+                    }
+
+//                    $mail[] = $mailbox->getMail($mailsIds[0]);
 
                     return response()->json(array('success' => true, 'data' => $mail), 200);
 
-                    echo "\n\nAttachments:\n";
-                    print_r($mail->getAttachments());
+//                    echo "\n\nAttachments:\n";
+//                    print_r($mail->getAttachments());
                 }
             }
         }
