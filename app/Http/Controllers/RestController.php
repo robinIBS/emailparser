@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Validator;
 use FunctionHelper;
 use Illuminate\Support\Facades\DB;
 use PhpImap\Mailbox;
+use Elasticsearch\ClientBuilder;
 
 class RestController extends Controller {
 
@@ -131,8 +132,31 @@ class RestController extends Controller {
     }
 
     public function keyword() {
+//        print_r($this->data);die;
         $message = '';
+        $insert_status = false;
+        $group_id = '';
+        $keywords_list = array_filter(array_unique(explode(",", $this->data['keyword'])));
 
+//        Validator::extend("keywords", function($attribute, $values, $parameters,$validator) {
+//            // put keywords into array
+//            $keywords = explode(',', $this->data['keyword']);
+//
+//            foreach ($keywords as $keyword) {
+//                // do validation logic
+//                $validator_custom = Validator::make(['keyword' => $keyword], ['keyword' => 'unique:filter_keywords']);
+//                if ($validator_custom->fails()) {
+//
+//
+//                    $validator->addReplacer('keywords', function ($message, $attribute, $rule, $parameters) use ($result) {
+//                        return str_replace([':value'], [$keyword], $message);
+//                    });
+//
+//                    return false;
+//                }
+//            }
+//            return true;
+//        });
         //validation
         $rules = [
             'action' => 'required'
@@ -141,14 +165,22 @@ class RestController extends Controller {
             'action.required' => 'Action variable missing.',
         ];
 
-        if ($this->data['action'] == 'add') {
-            $rules['keyword'] = 'required|unique:filter_keywords';
+        if ($this->data['action'] == 'add' || $this->data['action'] == 'update') {
+//            $rules['keyword'] = 'required|unique:filter_keywords';
+            $rules['keyword'] = 'required|keywords';
             $rules['search_in'] = 'required';
+            $rules['group'] = 'sometimes|nullable';
 
             $messages['keyword.required'] = 'Please Enter keyword';
+            $messages['keyword.keywords'] = ':value Keyword name has already be taken';
             $messages['search_in.required'] = 'Please choose Search In option.';
         }
-
+        //check the empty field group
+        if (strtolower($this->data['group']) == 'new') {
+            $rules['group_name'] = 'required';
+            $messages['group_name'] = 'Please enter group name';
+        }
+        $insert_keyword_group = array();
         $status = 0;
         $validator = Validator::make($this->data, $rules, $messages);
         $error = array();
@@ -156,17 +188,31 @@ class RestController extends Controller {
             $error = $validator->getMessageBag()->toArray();
             return response()->json(array('success' => false, 'message' => $error), 200);
         } else {
+
             if ($this->data['action'] == 'add' || $this->data['action'] == 'update') {
-                $explode_keywords = explode(',', $this->data['keyword']); 
-                
+                $explode_keywords = explode(',', $this->data['keyword']);
+
+                //create array for inserting in to keywords table
                 foreach ($explode_keywords as $val) {
-                    
+                    $post[] = array(
+                        'keyword' => $val,
+                        'search_in' => implode(',', $this->data['search_in']),
+                    );
+
+                    if (!empty(strtolower($this->data['group'])) && strtolower($this->data['group']) != 'new' && strtolower($this->data['group']) != 'none') {
+                        $insert_keyword_group[] = [
+                            'group_id' => $this->data['group'],
+                            'keyword_id' => $val,
+                            'created_at' => date('Y-m-d H:i:s'),
+                        ];
+                    }
                 }
-                
-                $post[] = array(
-                    'keyword' => $this->data['keyword'],
-                    'search_in' => implode(',', $this->data['search_in']),
-                );
+
+                //create array for inserting into keyword group
+//                $post[] = array(
+//                    'keyword' => $this->data['keyword'],
+//                    'search_in' => implode(',', $this->data['search_in']),
+//                );
 //                    print_r($post);die;
 //                foreach ($this->data['search_in'] as $val) {
 //                    $post[] = array(
@@ -178,7 +224,6 @@ class RestController extends Controller {
 
             switch (strtolower($this->data['action'])) {
                 case 'add':
-//                    $status = FilterKeywords::insert($post);
                     $message = "Keyword Added";
                     break;
                 case 'update':
@@ -205,6 +250,46 @@ class RestController extends Controller {
             //insert record
             $status = FilterKeywords::insert($post);
             if ($status) {
+
+                //insert into keyword group
+
+                foreach ($explode_keywords as $val) {
+                    $key_id = FunctionHelper::get_rec('filter_keywords', array('matching_field' => 'keyword', 'value' => $val))->first();
+                    print_r($key_id);
+                    die;
+                    if (!empty(strtolower($this->data['group'])) && strtolower($this->data['group']) != 'new' && strtolower($this->data['group']) != 'none') {
+
+
+                        if ($key_id->count() > 0) {
+                            $insert_keyword_group[] = [
+                                'group_id' => $this->data['group'],
+                                'keyword_id' => $key_id->_id,
+                                'created_at' => date('Y-m-d H:i:s'),
+                            ];
+                        }
+                    }
+
+                    if (!empty(strtolower($this->data['group'])) && strtolower($this->data['group']) == 'new' && strtolower($this->data['group']) != 'none') {
+                        $group_id = FilterGroups::insertGetId(array('name' => $this->data['group_name']));
+
+                        $insert_keyword_group[] = [
+                            'group_id' => $group_id,
+                            'keyword_id' => $key_id->_id,
+                            'created_at' => date('Y-m-d H:i:s'),
+                        ];
+                    }
+                }
+                if (!empty($insert_keyword_group)) {
+
+                    //Inserting into keyword group if the group exist
+                    $insert_status = FilterGroupKeywords::insert($insert_keyword_group);
+                    if ($insert_status) {
+                        return response()->json(array('success' => true, 'message' => $message), 200);
+                    } else {
+                        return response()->json(array('success' => true, 'message' => 'Error in creating group'), 200);
+                    }
+                }
+
                 return response()->json(array('success' => true, 'message' => $message), 200);
             } else {
                 return response()->json(array('Something went wrong plese try again!'), 400);
@@ -213,9 +298,6 @@ class RestController extends Controller {
     }
 
     public function keyword_group() {
-//        print_r(FunctionHelper::get_rec('filter_keywords',array('matching_field'=>'keyword','value'=>'test1')));
-//        die;
-
         $message = '';
 
         //validation
@@ -441,6 +523,48 @@ class RestController extends Controller {
     public function ImapInit($host, $port, $encr = 'ssl', $username, $password) {
         $mailbox = new Mailbox('{' . $host . ':' . $port . '/imap/' . $encr . '}INBOX', $username, $password, __DIR__);
         return $mailbox;
+    }
+
+    public function search_messages() {
+        $client = ClientBuilder::create()->build();
+        $subject = $this->data['subject'];
+        $from = $this->data['from'];
+        $to = $this->data['to'];
+
+        $wild_card[] = [
+            'Messages.Subject' => ['value' => strtolower($subject.'*')],
+        ];
+//        $wild_card[] = [
+//            'Messages.Sender' => ['value' => strtolower($from.'*')],
+//        ];
+//        $wild_card[] = [
+//            'Messages.RecipientUserID' => ['value' => strtolower($to.'*')],
+//        ];
+
+
+        $params = [
+            'index' => 'data_search',
+            'type' => 'data',
+            'body' => [
+                'query' => [
+//                    'wildcard' => $wild_card
+                    'bool' => [
+                        'must' => [
+                            $wild_card
+                        ]
+                    ]
+                ]
+            ]
+        ];
+//        echo '<pre>';
+//        print_r(json_encode($params));
+//        die;
+//        $response = $client->search($params);
+        $response = $client->search($params);
+        return response()->json(array('success' => true, 'data' => $response), 200);
+        echo '<pre>';
+        print_r($response);
+        die;
     }
 
 }

@@ -13,15 +13,15 @@
                         <div class="form-group required">
                             <label class="col-md-2 control-label">Filter Group</label>
                             <div class="col-md-6">
-                                <select class="form-control" id="filter_group_select_list" name="filter_group">
+                                <select class="form-control" id="group_list" name="group">
                                     <option value="">Select Filter Group</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="form-group required">
+                        <div class="form-group required group_name_div">
                             <label class="col-md-2 control-label">Group Name</label>
                             <div class="col-md-6">
-                                <input type="text" name="group_name" class="form-control">
+                                <input type="text" name="group_name" class="form-control" id="group_name">
                             </div>
                         </div>
                         <div class="form-group required">
@@ -92,8 +92,15 @@
                 options += '<option value="' + value._id + '">' + value.name + '</option>';
             });
             options += '<option value="new">New</option>';
-            $('#filter_group_select_list').html(options);
+            $('#group_list').html(options);
 
+        });
+        $(document).on('change', '#group_list', function () {
+            if ($(this).val() == 'new') {
+                $('.group_name_div').show();
+            } else {
+                $('.group_name_div').hide();
+            }
         });
 
     });

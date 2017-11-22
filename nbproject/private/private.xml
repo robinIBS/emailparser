@@ -2,17 +2,6 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group>
-            <file>file:/C:/xampp/htdocs/email-parser/resources/views/inbox/list_inbox.blade.php</file>
-            <file>file:/C:/xampp/htdocs/email-parser/resources/views/layouts/main.blade.php</file>
-            <file>file:/C:/xampp/htdocs/email-parser/resources/views/partial/_filters.blade.php</file>
-            <file>file:/C:/xampp/htdocs/email-parser/public/js/script.js</file>
-            <file>file:/C:/xampp/htdocs/email-parser/routes/web.php</file>
-            <file>file:/C:/xampp/htdocs/email-parser/app/Http/Controllers/RestController.php</file>
-            <file>file:/C:/xampp/htdocs/email-parser/app/Http/Controllers/EmailParserController.php</file>
-            <file>file:/C:/xampp/htdocs/email-parser/resources/views/inbox/create_inbox.blade.php</file>
-            <file>file:/C:/xampp/htdocs/email-parser/routes/api.php</file>
-            <file>file:/C:/xampp/htdocs/email-parser/resources/views/parsing/emails.blade.php</file>
-        </group>
+        <group/>
     </open-files>
 </project-private>

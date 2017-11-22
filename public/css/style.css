@@ -324,3 +324,6 @@ select{
   top:50%;
   left:50%;
 }
+.group_name_div{
+    display: none;
+}

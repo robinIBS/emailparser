@@ -22,3 +22,11 @@ Route::any('list_inbox', 'EmailParserController@list_inbox');
 Route::get('view', ['uses' => 'EmailParserController@view']);
 Route::get('add_filter', ['uses' => 'EmailParserController@add_rule']);
 Route::get('emails', ['uses' => 'EmailParserController@emails']);
+
+/***Elastic Search ****/
+Route::any('elastic_search','ElasticSearchController@elasticSearch');
+Route::any('elastic_create','ElasticSearchController@elasticCreate');
+Route::any('search_document','ElasticSearchController@search_document');
+Route::any('delete_document','ElasticSearchController@deleteDocument');
+Route::any('elastic_search_all','ElasticSearchController@elasticSearchAll');
+
