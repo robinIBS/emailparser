@@ -24,8 +24,11 @@ class EmailParserController extends Controller {
         return view('inbox.view', ['id' => Input::get('i')]);
     }
 
-    public function add_rule() {
-        return view('parsing.add_rule', ['id' => Input::get('i')]);
+    public function add_filter() {
+        return view('parsing.add_filter', ['id' => Input::get('i')]);
+    }
+    public function add_filter_group() {
+        return view('parsing.add_filter_group', ['id' => Input::get('i')]);
     }
     public function emails() {
         return view('parsing.emails', []);

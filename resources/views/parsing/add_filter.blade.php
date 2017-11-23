@@ -6,8 +6,8 @@
         <div class="">
             <div class="panel panel-default">
                 <div id="field_detail_content_pane">
-                    <div class="panel-heading">Add Filter Keywords</div>
-                    {{ Form::open(array('url' => 'add_rule','class'=>'form-horizontal','id'=>'create-rule-form')) }}
+                    <div class="panel-heading">Create Filter</div>
+                    {{ Form::open(array('url' => 'create_filter','class'=>'form-horizontal','id'=>'create-rule-form')) }}
                     <div class="panel-body">
 
                         <div class="form-group required">
@@ -69,7 +69,7 @@
             arr['action'] = 'add';
 
             //ADD Filter
-            ajax_request('POST', 'api/keyword', 'json', JSON.stringify(arr), function (d) {
+            ajax_request('POST', 'api/keyword', 'json', JSON.stringify(arr),{'token':"{!!env('TOKEN')!!}"},function (d) {
                 if (d.success == false) {
                     for (var error in d.message) {
                         $('#errors').append(d.message[error] + '<br>');
@@ -86,7 +86,7 @@
         });
 
         //fill the filter group dropdown
-        ajax_request('POST', 'api/keyword_group', 'json', '{"action":"list"}', function (d) {
+        ajax_request('POST', 'api/keyword_group', 'json', '{"action":"list"}',{'token':"{!!env('TOKEN')!!}"}, function (d) {
             var options = '<option value="">Select Filter Group</option>';
             $.each(d.data, function (index, value) {
                 options += '<option value="' + value._id + '">' + value.name + '</option>';

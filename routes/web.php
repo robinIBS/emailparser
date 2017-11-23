@@ -20,7 +20,8 @@ Route::any('create_inbox', 'EmailParserController@create_inbox');
 Route::any('list_inbox', 'EmailParserController@list_inbox');
 
 Route::get('view', ['uses' => 'EmailParserController@view']);
-Route::get('add_filter', ['uses' => 'EmailParserController@add_rule']);
+Route::get('create_filter', ['uses' => 'EmailParserController@add_filter']);
+Route::get('create_filter_group', ['uses' => 'EmailParserController@add_filter_group']);
 Route::get('emails', ['uses' => 'EmailParserController@emails']);
 Route::get('messages', ['uses' => 'EmailParserController@messages']);
 

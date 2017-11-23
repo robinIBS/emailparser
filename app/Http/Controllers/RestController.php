@@ -27,8 +27,6 @@ class RestController extends Controller {
         $this->client = ClientBuilder::create()->build();
 
 //        $token = Request::header('token');
-
-        
     }
 
     /**
@@ -134,27 +132,7 @@ class RestController extends Controller {
         $message = '';
         $insert_status = false;
         $group_id = '';
-        $keywords_list = array_filter(array_unique(explode(",", $this->data['keyword'])));
-
-//        Validator::extend("keywords", function($attribute, $values, $parameters,$validator) {
-//            // put keywords into array
-//            $keywords = explode(',', $this->data['keyword']);
-//
-//            foreach ($keywords as $keyword) {
-//                // do validation logic
-//                $validator_custom = Validator::make(['keyword' => $keyword], ['keyword' => 'unique:filter_keywords']);
-//                if ($validator_custom->fails()) {
-//
-//
-//                    $validator->addReplacer('keywords', function ($message, $attribute, $rule, $parameters) use ($result) {
-//                        return str_replace([':value'], [$keyword], $message);
-//                    });
-//
-//                    return false;
-//                }
-//            }
-//            return true;
-//        });
+//        $keywords_list = array_filter(array_unique(explode(",", $this->data['keyword'])));
         //validation
         $rules = [
             'action' => 'required'
@@ -165,18 +143,20 @@ class RestController extends Controller {
 
         if ($this->data['action'] == 'add' || $this->data['action'] == 'update') {
 //            $rules['keyword'] = 'required|unique:filter_keywords';
-            $rules['keyword'] = 'required|keywords';
+            $rules['keyword'] = 'required';
             $rules['search_in'] = 'required';
             $rules['group'] = 'sometimes|nullable';
 
             $messages['keyword.required'] = 'Please Enter keyword';
-            $messages['keyword.keywords'] = ':value Keyword name has already be taken';
+//            $messages['keyword.keywords'] = ':value Keyword name has already be taken';
             $messages['search_in.required'] = 'Please choose Search In option.';
         }
         //check the empty field group
-        if (strtolower($this->data['group']) == 'new') {
-            $rules['group_name'] = 'required';
-            $messages['group_name'] = 'Please enter group name';
+        if ($this->data['action'] == 'add' || $this->data['action'] == 'update') {
+            if (strtolower($this->data['group']) == 'new') {
+                $rules['group_name'] = 'required';
+                $messages['group_name'] = 'Please enter group name';
+            }
         }
         $insert_keyword_group = array();
         $status = 0;
@@ -249,30 +229,35 @@ class RestController extends Controller {
             $status = FilterKeywords::insert($post);
             if ($status) {
 
+                //Create new group
+                if (!empty(strtolower($this->data['group'])) && strtolower($this->data['group']) == 'new' && strtolower($this->data['group']) != 'none') {
+                    $group_id = FilterGroups::insertGetId(array('name' => $this->data['group_name']));
+                }
+
                 //insert into keyword group
 
                 foreach ($explode_keywords as $val) {
                     $key_id = FunctionHelper::get_rec('filter_keywords', array('matching_field' => 'keyword', 'value' => $val))->first();
-                    print_r($key_id);
-                    die;
-                    if (!empty(strtolower($this->data['group'])) && strtolower($this->data['group']) != 'new' && strtolower($this->data['group']) != 'none') {
 
+                    //if the group exist
+                    if (!empty(strtolower($this->data['group'])) && strtolower($this->data['group']) != 'new' && strtolower($this->data['group']) != 'none') {
 
                         if ($key_id->count() > 0) {
                             $insert_keyword_group[] = [
                                 'group_id' => $this->data['group'],
-                                'keyword_id' => $key_id->_id,
+                                'keyword_id' => $key_id['_id'],
                                 'created_at' => date('Y-m-d H:i:s'),
                             ];
                         }
                     }
 
+                    //if the group newly created
                     if (!empty(strtolower($this->data['group'])) && strtolower($this->data['group']) == 'new' && strtolower($this->data['group']) != 'none') {
-                        $group_id = FilterGroups::insertGetId(array('name' => $this->data['group_name']));
+
 
                         $insert_keyword_group[] = [
                             'group_id' => $group_id,
-                            'keyword_id' => $key_id->_id,
+                            'keyword_id' => $key_id['_id'],
                             'created_at' => date('Y-m-d H:i:s'),
                         ];
                     }
@@ -310,7 +295,7 @@ class RestController extends Controller {
             $rules['name'] = 'required|unique:filter_groups';
             $rules['keyword'] = 'required';
 
-            $messages['name.required'] = 'Please Enter name.';
+            $messages['name.required'] = 'Please Enter Group Name.';
             $messages['keyword.required'] = 'Please Select Keywords';
         }
         if ($this->data['action'] == 'update' || $this->data['action'] == 'delete') {
