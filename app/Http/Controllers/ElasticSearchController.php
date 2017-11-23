@@ -101,6 +101,10 @@ class ElasticSearchController extends Controller {
 
         // Delete doc at /my_index/my_type/my_id
         $response = $this->client->deleteByQuery($params);
+        
+        //delete the last id table
+        
+        DB::collection('last_message_ids')->delete();
         echo '<pre>';
         print_r($response);
         die;

@@ -18,11 +18,13 @@ use FunctionHelper;
 use Illuminate\Support\Facades\DB;
 use PhpImap\Mailbox;
 use Elasticsearch\ClientBuilder;
+use App\EbayNotifications;
 
 class RestController extends Controller {
 
     public function __construct() {
         $this->data = Request::json()->all();
+        $this->client = ClientBuilder::create()->build();
 
 //        $this->action_table_arr = array(
 //            'add_filter_keyword' => 'FilterKeywords'
@@ -618,51 +620,43 @@ class RestController extends Controller {
     public function elastic_create() {
         $client = ClientBuilder::create()->build();
         $msg_id = $timestamp = '';
+        $params = $response=array();
 
         //get the last message id
         $last_id = DB::collection('last_message_ids')->orderBy('_id', 'desc')->first();
 
-//        $records = DB::collection('EbayNotifications')->where(array('NotificationEventName' => 'MyMessageseBayMessage','_id'=>array('$gt'=>$last_id['msg_id'])))->take(200)->get()->toArray();
-        $records = DB::collection('EbayNotifications')
-                ->where(array('NotificationEventName' => 'MyMessageseBayMessage'));
+        $lists = EbayNotifications::where(array('NotificationEventName' => 'MyMessageseBayMessage'))->orWhere(array('NotificationEventName' => 'MyMessagesM2MMessage'));
         if (count($last_id) > 0) {
-            $records->where('_id', '>', $last_id['msg_id']);
+            $lists->where('_id', '>', $last_id['msg_id']);
         }
-        $records->take(200);
-        $rec = $records->get()
-                ->toArray();
-//        $records = DB::collection('EbayNotifications')->take(1000)->get()->toArray();
-//        echo '<pre>';
-//        print_r($rec);
+
+        $lists->chunk(200, function($list) use($params,&$response) {
+
+            foreach ($list as $val) {
+                $params['body'][] = [
+                    'index' => [
+                        '_index' => 'data_search',
+                        '_type' => 'data'
+                    ],
+                ];
+
+                $params['body'][] = [
+                    'NotificationEventName' => $val['NotificationEventName'],
+                    'RecipientUserID' => $val['RecipientUserID'],
+                    'Messages' => $val['RawData']['Messages']['Message']
+                ];
+
+                $msg_id = $val['_id'];
+                $timestamp = $val['Timestamp'];
+            }
+
+            //insert message id
+            $insert = DB::collection('last_message_ids')->insert(array('msg_id' => $msg_id, 'timestamp' => $timestamp));
+
+            //create elastic search data
+            $response = $this->client->bulk($params);
+        });
 //        die;
-
-        foreach ($rec as $val) {
-
-            $params['body'][] = [
-                'index' => [
-                    '_index' => 'data_search',
-                    '_type' => 'data'
-                ],
-            ];
-
-//            
-//            unset($val['RawData']['Messages']['Message']['Text']);
-//            unset($val['RawData']['Messages']['Message']['Content']);
-            $params['body'][] = [
-                'NotificationEventName' => $val['NotificationEventName'],
-                'RecipientUserID' => $val['RecipientUserID'],
-                'Messages' => $val['RawData']['Messages']['Message']
-            ];
-            $msg_id = $val['_id'];
-            $timestamp = $val['Timestamp'];
-        }
-//        
-        //record the last record message ID stored
-
-        $insert = DB::collection('last_message_ids')->insert(array('msg_id' => $msg_id, 'timestamp' => $timestamp));
-
-
-        $response = $client->bulk($params);
         echo '<pre>';
         print_r(json_encode($response));
         die;
