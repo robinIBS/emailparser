@@ -26,7 +26,8 @@ Route::get('list_inbox/{user_id}',['uses'=>'RestController@list_inbox']);
 Route::get('view/{ID}',['uses'=>'RestController@view']);
 Route::get('get_rule_view/{view}',['uses'=>'RestController@get_rule_view']);
 
-Route::any('elastic_create','RestController@elastic_create');
+
+Route::any('elastic_create','RestController@elastic_create')->middleware('checkToken');;
 
 
-Route::post('search_messages',['uses'=>'RestController@search_messages']);
+Route::post('search_messages',['uses'=>'RestController@search_messages'])->middleware('checkToken');;

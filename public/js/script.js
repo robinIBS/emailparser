@@ -1,10 +1,11 @@
 //$(document).ready(function () {
 
-function ajax_request(method, action, dataType, data = {}, callback) {
+function ajax_request(method, action, dataType, data = {},headers={},callback) {
     $.ajax({
         type: method,
         dataType: dataType,
         url: action,
+        headers: headers,
 //                async: false,
         data: data,
         contentType: "application/json; charset=utf-8",

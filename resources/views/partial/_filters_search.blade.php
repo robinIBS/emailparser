@@ -35,7 +35,7 @@
             });
             table.clear().draw();
 
-            ajax_request('POST', 'api/search_messages', 'json', JSON.stringify(arr), function (d) {
+            ajax_request('POST', 'api/search_messages', 'json', JSON.stringify(arr),{'token':"{!!env('TOKEN')!!}"}, function (d) {
 
                 if (d.success == false) {
                     for (var error in d.message) {

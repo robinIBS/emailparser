@@ -26,13 +26,9 @@ class RestController extends Controller {
         $this->data = Request::json()->all();
         $this->client = ClientBuilder::create()->build();
 
-//        $this->action_table_arr = array(
-//            'add_filter_keyword' => 'FilterKeywords'
-//        );
-//        
-//        $this->action_rule_arr = array(
-//            'add_filter_keyword' => array('keyword.required')
-//        );
+//        $token = Request::header('token');
+
+        
     }
 
     /**
@@ -607,12 +603,7 @@ class RestController extends Controller {
                     ]
                 ]
             ];
-//        echo '<pre>';
-//        print_r(json_encode($params));
-//        die;
-//        die;
             $response = $client->search($params);
-//            $response = $client->getSource($params);
             return response()->json(array('success' => true, 'data' => $response), 200);
         }
     }
@@ -620,7 +611,7 @@ class RestController extends Controller {
     public function elastic_create() {
         $client = ClientBuilder::create()->build();
         $msg_id = $timestamp = '';
-        $params = $response=array();
+        $params = $response = array();
 
         //get the last message id
         $last_id = DB::collection('last_message_ids')->orderBy('_id', 'desc')->first();
@@ -630,7 +621,7 @@ class RestController extends Controller {
             $lists->where('_id', '>', $last_id['msg_id']);
         }
 
-        $lists->chunk(200, function($list) use($params,&$response) {
+        $lists->chunk(200, function($list) use($params, &$response) {
 
             foreach ($list as $val) {
                 $params['body'][] = [
@@ -656,10 +647,7 @@ class RestController extends Controller {
             //create elastic search data
             $response = $this->client->bulk($params);
         });
-//        die;
-        echo '<pre>';
-        print_r(json_encode($response));
-        die;
+        return response()->json(array('success' => true, 'data' => $response), 200);
     }
 
 }

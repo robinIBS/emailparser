@@ -73,7 +73,7 @@
             a["search"] = '{"MessageID":"'+msgId+'"}';
 
 //            ajax_request('POST', 'api/search_messages', 'json', '{"search":"{"MessageID":"'+msgId+'"}', function (d) {
-            ajax_request('POST', 'api/search_messages', 'json', JSON.stringify(a), function (d) {
+            ajax_request('POST', 'api/search_messages', 'json', JSON.stringify(a),{'token':"{!!env('TOKEN')!!}"}, function (d) {
 //            ajax_request('POST', 'api/search_messages', 'json', a, function (d) {
 
                 if (d.success == false) {
