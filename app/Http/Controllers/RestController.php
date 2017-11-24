@@ -26,6 +26,14 @@ class RestController extends Controller {
         $this->data = Request::json()->all();
         $this->client = ClientBuilder::create()->build();
 
+        $this->array_map = array(
+            'subject' => 'Messages.Subject',
+            'from' => 'Messages.Sender',
+            'to' => 'RecipientUserID',
+            'body' => 'Messages.Text',
+            'date' => 'Messages.ReceiveDate',
+        );
+
 //        $token = Request::header('token');
     }
 
@@ -537,19 +545,14 @@ class RestController extends Controller {
     }
 
     public function search_messages() {
-        $array_map = array(
-            'subject' => 'Messages.Subject',
-            'from' => 'Messages.Sender',
-            'to' => 'RecipientUserID',
-            'body' => 'Messages.Text',
-        );
+        $response = array();
 
         $rules = [
-            'search' => 'required',
+//            'search' => 'required',
         ];
 
         $messages = [
-            'search.required' => 'Search Field cannot be emmpty'
+//            'search.required' => 'Search Field cannot be emmpty'
         ];
 
         $validator = Validator::make($this->data, $rules, $messages);
@@ -559,11 +562,6 @@ class RestController extends Controller {
             return response()->json(array('success' => false, 'message' => $error), 200);
         } else {
             $subject = $from = $to = $MessageID = $body = '';
-            //parsed json into array
-            $parsed_json = json_decode($this->data['search'], true);
-
-            //extract the array variables
-            extract($parsed_json);
 
             //init the elastic search
             $client = ClientBuilder::create()->build();
@@ -577,13 +575,46 @@ class RestController extends Controller {
 
                     $wild_card[] = [
                         'wildcard' => [
-                            $array_map[strtolower($val)] => [
+                            $this->array_map[strtolower($val)] => [
                                 'value' => strtolower($keyword->keyword)
                             ]
                         ],
                     ];
                 }
             }
+
+
+            //filter from-date
+//            if (!empty($this->data['filter_from_date'])) {
+//                $wild_card[] = [
+//                    'wildcard' => [
+//                        $this->array_map['date'] => [
+//                            'value' => strtolower('*' . $this->data['filter_from_date'] . '*')
+//                        ]
+//                    ],
+//                ];
+//            }
+//
+//            //filter to-date
+//            if (!empty($this->data['filter_to_date'])) {
+//                $wild_card[] = [
+//                    'wildcard' => [
+//                        $this->array_map['date'] => [
+//                            'value' => strtolower('*' . $this->data['filter_to_date'] . '*')
+//                        ]
+//                    ],
+//                ];
+//            }
+            ///create the filter group wildcard seratch array
+            if (!empty($this->data['filter_group'])) {
+//                $keyword = FilterGroups::where(array('_id' => $this->data['filter_group']))->first();
+//                $explode = explode(',', $keyword->search_in);
+//                $suffixed_array = preg_filter('/$/', ' "' . $keyword->keyword . '"', $explode);
+//
+//                $search_criteria = implode(' ', $suffixed_array);
+            }
+
+
 //            echo '<pre>';
 //            print_r($wild_card);die;
 //            if (!empty($subject)) {
@@ -634,32 +665,67 @@ class RestController extends Controller {
 //                ];
 //            }
 
-            if (!empty($MessageID)) {
+            if (!empty($this->data['MessageID'])) {
                 //entry for to field
                 $wild_card[] = [
                     'wildcard' => [
                         'Messages.MessageID' => [
-                            'value' => strtolower($MessageID)
+                            'value' => strtolower($this->data['MessageID'])
                         ]
                     ],
                 ];
             }
-
+//            if (!empty($wild_card)) {
+//            $params = [
+//                'index' => 'data_search',
+//                'type' => 'data',
+//                'body' => [
+//                    'query' => [
+//                        'bool' => [
+//                            'should' => [
+//                                $wild_card,
+//                            ],
+//                            'must' => [
+//                                'range' => [
+//                                    $this->array_map['date'] => [
+//                                        'gte' => date('Y-m-19'),
+//                                        'lt' => date('Y-m-21'),
+////                                        'format' => 'epoch_millis'
+//                                    ]
+//                                ]
+//                            ]
+//                        ]
+//                    ]
+//                ]
+//            ];
+            //default init
             $params = [
                 'index' => 'data_search',
                 'type' => 'data',
                 'body' => [
                     'query' => [
-//                    'wildcard' => $wild_card
                         'bool' => [
-                            'should' => [
-                                $wild_card
-                            ]
                         ]
                     ]
                 ]
             ];
+            if (!empty($wild_card)) {
+                $params['body']['query']['bool']['should'] = $wild_card;
+            }
+
+            if (!empty($this->data['filter_from_date']) && !empty($this->data['filter_to_date'])) {
+                $params['body']['query']['bool']['must']['range'] = [
+                    $this->array_map['date'] => [
+                        'gte' => date('Y-m-d', strtotime($this->data['filter_from_date'])),
+                        'lt' => date('Y-m-d', strtotime($this->data['filter_to_date'])),
+                    ]
+                ];
+            }
+
+//                echo json_encode($params);die;
             $response = $client->search($params);
+//            }
+
             return response()->json(array('success' => true, 'data' => $response), 200);
         }
     }
@@ -690,7 +756,7 @@ class RestController extends Controller {
                 $params['body'][] = [
                     'NotificationEventName' => $val['NotificationEventName'],
                     'RecipientUserID' => $val['RecipientUserID'],
-                    'Timestamp' => $val['Timestamp'],
+                    'ReceiveDate' => $val['Timestamp'],
                     'Messages' => $val['RawData']['Messages']['Message']
                 ];
 

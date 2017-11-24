@@ -4,12 +4,12 @@
         <div class="col-md-12">
 
 
-            <div class="form-group required">
-                <label class="control-label">Search Pattern</label>
-                <!--<div class="col-md-2">-->
-                <input type="text" class="form-control" id="filter_to_date" name="search"> 
-                <!--</div>-->
-            </div>
+            <!--            <div class="form-group required">
+                            <label class="control-label">Search Pattern</label>
+                            <div class="col-md-2">
+                            <input type="text" class="form-control" id="filter_to_date" name="search"> 
+                            </div>
+                        </div>-->
             <div class="form-group">
                 <label class="control-label">Filter</label>
                 <!--<div class="col-md-2">-->
@@ -18,14 +18,14 @@
                 </select>
                 <!--</div>-->
             </div>
-            <div class="form-group required">
-                <label class=" control-label">Filter Group</label>
-                <!--<div class="col-md-2">-->
-                <select class="form-control" id="filter_group_select_list" name="filter_group">
-                    <option value="">Select Filter Group</option>
-                </select>
-                <!--</div>-->
-            </div>
+            <!--            <div class="form-group required">
+                            <label class=" control-label">Filter Group</label>
+                            <div class="col-md-2">
+                            <select class="form-control" id="filter_group_select_list" name="filter_group">
+                                <option value="">Select Filter Group</option>
+                            </select>
+                            </div>
+                        </div>-->
             <div class="form-group required">
                 <label class="control-label">From Date</label>
                 <!--<div class="col-md-2">-->
@@ -72,7 +72,9 @@
                     }
                     $('.error-div').show();
                 } else {
-                    if (typeof d.data.hits.hits !== 'undefined') {
+
+//                    if (typeof d.data.length !== 0) {
+                    if (typeof d.data.hits != 'undefined') {
                         var sr;
                         sr = 1;
 

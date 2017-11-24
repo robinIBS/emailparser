@@ -70,11 +70,11 @@
         $(document).on("click", ".view_message_link", function () {
             var msgId = $(this).attr('msgID');
             var a = {};
-            a["search"] = '{"MessageID":"'+msgId+'"}';
+//            a["search"] = '{"MessageID":"'+msgId+'"}';
 
 //            ajax_request('POST', 'api/search_messages', 'json', '{"search":"{"MessageID":"'+msgId+'"}', function (d) {
-            ajax_request('POST', 'api/search_messages', 'json', JSON.stringify(a),{'token':"{!!env('TOKEN')!!}"}, function (d) {
-//            ajax_request('POST', 'api/search_messages', 'json', a, function (d) {
+//            ajax_request('POST', 'api/search_messages', 'json', JSON.stringify(a),{'token':"{!!env('TOKEN')!!}"}, function (d) {
+            ajax_request('POST', 'api/search_messages', 'json', '{"MessageID":"'+msgId+'"}',{'token':"{!!env('TOKEN')!!}"}, function (d) {
 
                 if (d.success == false) {
                     for (var error in d.message) {
