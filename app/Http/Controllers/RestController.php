@@ -359,30 +359,21 @@ class RestController extends Controller {
 //                                                                'foreignField' => 'group_id',
 //                                                                'localField' => '_id'
 //                                                            ],
+//                                                        ],
+////                                                            [
 ////                                                            '$unwind' => [
 ////                                                                'path' => '$keywords',
 ////                                                                'preserveNullAndEmptyArrays' => true
 ////                                                            ],
+////                                                        ],
+////                                                            [
 ////                                                            '$lookup' => [
 ////                                                                'as' => 'key',
 ////                                                                'from' => 'filter_keywords',
 ////                                                                'foreignField' => '_id',
 ////                                                                'localField' => 'keywords.keyword_id'
 ////                                                            ]
-////                                                            
-//                                                        ], [
-//                                                            '$unwind' => [
-//                                                                'path' => '$keywords',
-//                                                                'preserveNullAndEmptyArrays' => true
-//                                                            ],
-//                                                        ], [
-//                                                            '$lookup' => [
-//                                                                'as' => 'key',
-//                                                                'from' => 'filter_keywords',
-//                                                                'foreignField' => '_id',
-//                                                                'localField' => 'keywords.keyword_id'
-//                                                            ]
-//                                                        ]
+////                                                        ]
 //                                                    ]
 //                                    );
 //                                });
@@ -546,7 +537,12 @@ class RestController extends Controller {
     }
 
     public function search_messages() {
-//        print_r($this->data);
+        $array_map = array(
+            'subject' => 'Messages.Subject',
+            'from' => 'Messages.Sender',
+            'to' => 'RecipientUserID',
+            'body' => 'Messages.Text',
+        );
 
         $rules = [
             'search' => 'required',
@@ -572,49 +568,78 @@ class RestController extends Controller {
             //init the elastic search
             $client = ClientBuilder::create()->build();
 
-            if (!empty($subject)) {
-                //entry for subject field
-                $wild_card[] = [
-                    'wildcard' => [
-                        'Messages.Subject' => [
-                            'value' => strtolower($subject)
-                        ]
-                    ],
-                ];
-            } else if (!empty($from)) {
 
-                //entry for from field
-                $wild_card[] = [
-                    'wildcard' => [
-                        'Messages.Sender' => [
-                            'value' => strtolower($from)
-                        ]
-                    ],
-                ];
-            } else if (!empty($to)) {
-                //entry for to field
-                $wild_card[] = [
-                    'wildcard' => [
-                        'RecipientUserID' => [
-                            'value' => strtolower($to)
-                        ]
-                    ],
-                ];
-            } else if (!empty($MessageID)) {
+            if (!empty($this->data['filter_keyword'])) {
+                $keyword = FilterKeywords::where(array('_id' => $this->data['filter_keyword']))->first();
+                $explode = explode(',', $keyword->search_in);
+
+                foreach ($explode as $val) {
+
+                    $wild_card[] = [
+                        'wildcard' => [
+                            $array_map[strtolower($val)] => [
+                                'value' => strtolower($keyword->keyword)
+                            ]
+                        ],
+                    ];
+                }
+            }
+//            echo '<pre>';
+//            print_r($wild_card);die;
+//            if (!empty($subject)) {
+//                //entry for subject field
+//                $wild_card[] = [
+//                    'wildcard' => [
+//                        'Messages.Subject' => [
+//                            'value' => strtolower($subject)
+//                        ]
+//                    ],
+//                ];
+//            } else if (!empty($from)) {
+//
+//                //entry for from field
+//                $wild_card[] = [
+//                    'wildcard' => [
+//                        'Messages.Sender' => [
+//                            'value' => strtolower($from)
+//                        ]
+//                    ],
+//                ];
+//            } else if (!empty($to)) {
+//                //entry for to field
+//                $wild_card[] = [
+//                    'wildcard' => [
+//                        'RecipientUserID' => [
+//                            'value' => strtolower($to)
+//                        ]
+//                    ],
+//                ];
+//            } else if (!empty($MessageID)) {
+//                //entry for to field
+//                $wild_card[] = [
+//                    'wildcard' => [
+//                        'Messages.MessageID' => [
+//                            'value' => strtolower($MessageID)
+//                        ]
+//                    ],
+//                ];
+//            } else if (!empty($body)) {
+//                //entry for to field
+//                $wild_card[] = [
+//                    'wildcard' => [
+//                        'Messages.Text' => [
+//                            'value' => strtolower($body)
+//                        ]
+//                    ],
+//                ];
+//            }
+
+            if (!empty($MessageID)) {
                 //entry for to field
                 $wild_card[] = [
                     'wildcard' => [
                         'Messages.MessageID' => [
                             'value' => strtolower($MessageID)
-                        ]
-                    ],
-                ];
-            } else if (!empty($body)) {
-                //entry for to field
-                $wild_card[] = [
-                    'wildcard' => [
-                        'Messages.Text' => [
-                            'value' => strtolower($body)
                         ]
                     ],
                 ];
@@ -627,7 +652,7 @@ class RestController extends Controller {
                     'query' => [
 //                    'wildcard' => $wild_card
                         'bool' => [
-                            'must' => [
+                            'should' => [
                                 $wild_card
                             ]
                         ]
@@ -681,8 +706,8 @@ class RestController extends Controller {
         });
         return response()->json(array('success' => true, 'data' => $response), 200);
     }
-    
-     public function delete_document() {
+
+    public function delete_document() {
         $params = [
             'index' => 'data_search',
             'type' => 'data',
@@ -696,9 +721,9 @@ class RestController extends Controller {
 
         // Delete doc at /my_index/my_type/my_id
         $response = $this->client->deleteByQuery($params);
-        
+
         //delete the last id table
-        
+
         DB::collection('last_message_ids')->delete();
         return response()->json(array('success' => true, 'data' => $response), 200);
         echo '<pre>';
