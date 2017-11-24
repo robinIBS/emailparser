@@ -47,12 +47,12 @@
                                 <th>
                                     Group Name
                                 </th>
-<!--                                <th>
+                                <th>
                                     Keywords
-                                </th>-->
-<!--                                <th>
-                                    Action
-                                </th>-->
+                                </th>
+                               <!--                                <th>
+                                                                   Action
+                                                               </th>-->
                             </tr>
 
                         </thead>
@@ -115,12 +115,17 @@
                     if (typeof d.data !== 'undefined') {
                         var sr;
                         sr = 1;
-
+                        var keywords = '';
                         $.each(d.data, function (index, value) {
+
+                            $.each(value.keywords, function (i, v) {
+                                keywords += v.keyword_id+',';
+                            });
+
                             table.row.add([
                                 sr,
                                 value.name,
-//                                value._source.Messages.Subject,
+                                keywords,
 //                                '<a href="javascript:void(0)" class="view_message_link" msgID="' + value._source.Messages.MessageID + '"><i class="fa fa-eye" aria-hidden="true"></i></a>'
                             ]).draw(false);
                             sr++;
@@ -129,7 +134,7 @@
                 }
             });
         }
-refresh_table();
+        refresh_table();
     });
 </script>
 @endpush

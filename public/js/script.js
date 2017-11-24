@@ -1,12 +1,13 @@
 //$(document).ready(function () {
 
 function ajax_request(method, action, dataType, data = {},headers={},callback) {
+    headers['Cache-Control']='no-cache';
     $.ajax({
         type: method,
         dataType: dataType,
         url: action,
         headers: headers,
-//                async: false,
+//                async: true,
         data: data,
         contentType: "application/json; charset=utf-8",
         beforeSend: function () {

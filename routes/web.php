@@ -23,7 +23,7 @@ Route::get('view', ['uses' => 'EmailParserController@view']);
 Route::get('create_filter', ['uses' => 'EmailParserController@add_filter']);
 Route::get('create_filter_group', ['uses' => 'EmailParserController@add_filter_group']);
 Route::get('emails', ['uses' => 'EmailParserController@emails']);
-Route::get('messages', ['uses' => 'EmailParserController@messages']);
+Route::get('notifications', ['uses' => 'EmailParserController@notifications']);
 
 /***Elastic Search ****/
 Route::any('elastic_search','ElasticSearchController@elasticSearch');

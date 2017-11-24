@@ -56,7 +56,7 @@
                             @guest
                             <li><a href="{{ url('create_filter') }}">Create Filter</a></li>
                             <li><a href="{{ url('create_filter_group') }}">Create Filter Group</a></li>
-                            <!--<li><a href="{{ url('list_inbox') }}">List</a></li>-->
+                            <li><a href="{{ url('notifications') }}">Notifications</a></li>
 
                             @else
                             <li class="dropdown">

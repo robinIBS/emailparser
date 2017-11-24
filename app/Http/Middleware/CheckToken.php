@@ -15,8 +15,11 @@ class CheckToken {
      */
     public function handle($request, Closure $next) {
         $token = $request->header('token');
-
-        if (trim($token) != env('TOKEN')) {
+//        echo env('BROADCAST_DRIVER');die;
+//        if (trim($token) != env('TOKEN')) {
+        if (trim($token) != '5a16a5e50af69') {
+//            echo $token . '</br>' . env('TOKEN');
+//            die;
             return response()->json(array('success' => false, 'message' => 'You are Un-authorized to perform this action'), 401);
         }
 

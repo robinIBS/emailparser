@@ -349,6 +349,43 @@ class RestController extends Controller {
                                                     ]
                                     );
                                 });
+//                        $list = FilterGroups::raw(function($collection) {
+//                                    return $collection->aggregate(
+//                                                    [
+//                                                            [
+//                                                            '$lookup' => [
+//                                                                'as' => 'keywords',
+//                                                                'from' => 'filter_group_keywords',
+//                                                                'foreignField' => 'group_id',
+//                                                                'localField' => '_id'
+//                                                            ],
+////                                                            '$unwind' => [
+////                                                                'path' => '$keywords',
+////                                                                'preserveNullAndEmptyArrays' => true
+////                                                            ],
+////                                                            '$lookup' => [
+////                                                                'as' => 'key',
+////                                                                'from' => 'filter_keywords',
+////                                                                'foreignField' => '_id',
+////                                                                'localField' => 'keywords.keyword_id'
+////                                                            ]
+////                                                            
+//                                                        ], [
+//                                                            '$unwind' => [
+//                                                                'path' => '$keywords',
+//                                                                'preserveNullAndEmptyArrays' => true
+//                                                            ],
+//                                                        ], [
+//                                                            '$lookup' => [
+//                                                                'as' => 'key',
+//                                                                'from' => 'filter_keywords',
+//                                                                'foreignField' => '_id',
+//                                                                'localField' => 'keywords.keyword_id'
+//                                                            ]
+//                                                        ]
+//                                                    ]
+//                                    );
+//                                });
 
 
                         return response()->json(array('success' => true, 'data' => $list), 200);
@@ -525,7 +562,7 @@ class RestController extends Controller {
             $error = $validator->getMessageBag()->toArray();
             return response()->json(array('success' => false, 'message' => $error), 200);
         } else {
-            $subject = $from = $to = $MessageID = '';
+            $subject = $from = $to = $MessageID = $body = '';
             //parsed json into array
             $parsed_json = json_decode($this->data['search'], true);
 
@@ -572,6 +609,15 @@ class RestController extends Controller {
                         ]
                     ],
                 ];
+            } else if (!empty($body)) {
+                //entry for to field
+                $wild_card[] = [
+                    'wildcard' => [
+                        'Messages.Text' => [
+                            'value' => strtolower($body)
+                        ]
+                    ],
+                ];
             }
 
             $params = [
@@ -605,7 +651,7 @@ class RestController extends Controller {
         if (count($last_id) > 0) {
             $lists->where('_id', '>', $last_id['msg_id']);
         }
-
+//        print_r($lists);die;
         $lists->chunk(200, function($list) use($params, &$response) {
 
             foreach ($list as $val) {
@@ -619,6 +665,7 @@ class RestController extends Controller {
                 $params['body'][] = [
                     'NotificationEventName' => $val['NotificationEventName'],
                     'RecipientUserID' => $val['RecipientUserID'],
+                    'Timestamp' => $val['Timestamp'],
                     'Messages' => $val['RawData']['Messages']['Message']
                 ];
 
@@ -633,6 +680,30 @@ class RestController extends Controller {
             $response = $this->client->bulk($params);
         });
         return response()->json(array('success' => true, 'data' => $response), 200);
+    }
+    
+     public function delete_document() {
+        $params = [
+            'index' => 'data_search',
+            'type' => 'data',
+//            'id' => 'my_id'
+            'body' => [
+                'query' => [
+                    'match_all' => (object) []
+                ]
+            ]
+        ];
+
+        // Delete doc at /my_index/my_type/my_id
+        $response = $this->client->deleteByQuery($params);
+        
+        //delete the last id table
+        
+        DB::collection('last_message_ids')->delete();
+        return response()->json(array('success' => true, 'data' => $response), 200);
+        echo '<pre>';
+        print_r($response);
+        die;
     }
 
 }

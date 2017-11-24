@@ -33,8 +33,8 @@ class EmailParserController extends Controller {
     public function emails() {
         return view('parsing.emails', []);
     }
-    public function messages() {
-        return view('parsing.messages', []);
+    public function notifications() {
+        return view('parsing.notifications', []);
     }
 
 
