@@ -107,8 +107,12 @@
 //            ajax_request('POST', 'api/keyword', 'json', JSON.stringify(arr), {'token': "{!!env('TOKEN')!!}"}, function (d) {
             ajax_request('POST', 'api/keyword', 'json', JSON.stringify(arr), {'token': "5a16a5e50af69"}, function (d) {
                 if (d.success == false) {
-                    for (var error in d.message) {
-                        $('#errors').append(d.message[error] + '<br>');
+                    if ($.isArray(d.message)) {
+                        for (var error in d.message) {
+                            $('#errors').append(d.message[error] + '<br>');
+                        }
+                    } else {
+                        $('#errors').append(d.message);
                     }
                     $('.error-div').show();
                 } else if (d.success == true) {
@@ -135,32 +139,38 @@
 
         });
         $(document).on('change', '#group_list', function () {
-            if ($(this).val() == 'new') {
-                $('.group_name_div').show();
+
+            if ($(this).val() != '') {
+                if ($(this).val() == 'new') {
+                    $('.group_name_div').show();
 //                $('#keyword').text('');
-            } else {
-                $('.group_name_div').hide();
+                } else {
+                    $('.group_name_div').hide();
 
 //                //fetch the details
-                ajax_request('POST', 'api/keyword_group', 'json', '{"action":"fetch_rec","id":"' + $(this).val() + '"}', {'token': "5a16a5e50af69"}, function (d) {
-                    var options = '';
+                    ajax_request('POST', 'api/keyword_group', 'json', '{"action":"fetch_rec","id":"' + $(this).val() + '"}', {'token': "5a16a5e50af69"}, function (d) {
+                        var options = '';
 //                    if (typeof d.data.keywords != 'undefined') {
 //                    alert(JSON.stringify(d.data));
-                    $.each(d.data[0].keywords, function (index, value) {
-                        options += value.keyword_name + ',';
-                    });
+                        $.each(d.data[0].keywords, function (index, value) {
+                            options += value.keyword_name + ',';
+                        });
 //                    }
-                    options = options.substring(0, options.length - 1);
-                    $('#keyword').text(options);
+                        options = options.substring(0, options.length - 1);
+                        $('#keyword').text(options);
 
-                });
-
-
-
+                    });
+                }
             }
+
         });
 
         function refresh_table() {
+
+            //clear the table
+            table.clear().draw();
+
+
 //            ajax_request('POST', 'api/keyword', 'json', '{"action":"list"}', {'token': "{!!env('TOKEN')!!}"}, function (d) {
             ajax_request('POST', 'api/keyword', 'json', '{"action":"list"}', {'token': "5a16a5e50af69"}, function (d) {
 

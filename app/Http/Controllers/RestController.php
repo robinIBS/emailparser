@@ -177,25 +177,36 @@ class RestController extends Controller {
             $existArray = array();
             if ($this->data['action'] == 'add' || $this->data['action'] == 'update') {
                 $explode_keywords = explode(',', $this->data['keyword']);
-
+                
+                //check only the unique keywords in array
+                $unique_keyword = FunctionHelper::has_dupes($explode_keywords);
+//                print_r($unique_keyword);die;
+                if($unique_keyword==1){
+                    return response()->json(array('success' => false, 'message' => 'only unique keywords allowed'), 200);
+                }
                 //create array for inserting in to keywords table
                 foreach ($explode_keywords as $val) {
 
                     //check if the keyword already exist
                     $checkexist = FilterKeywords::where(array('keyword' => $val))->get();
 
-                    if (!empty($checkexist)) {
-                        
+                    if ($checkexist->count()>0) {
+                        $existArray[] = $val;
                     } else {
-                        
+                        $post[] = array(
+                            'keyword' => $val,
+                            'search_in' => implode(',', $this->data['search_in']),
+                        );
                     }
-                    $post[] = array(
-                        'keyword' => $val,
-                        'search_in' => implode(',', $this->data['search_in']),
-                    );
                 }
             }
 
+            //return error message if the keyword already exits
+
+            if (!empty($existArray)) {
+                return response()->json(array('success' => false, 'message' => "Keyword already exist:" . implode(',', $existArray)), 200);
+            }
+//            die;
             switch (strtolower($this->data['action'])) {
                 case 'add':
                     $message = "Keyword Added";
@@ -242,7 +253,7 @@ class RestController extends Controller {
 
                         if (!empty($key_id)) {
                             $insert_keyword_group[] = [
-                                'group_id' => $this->data['group'],
+                                'group_id' => new ObjectID($this->data['group']),
                                 'group_name' => (count($group_record) > 0) ? $group_record['name'] : '',
                                 'keyword_id' => $key_id['_id'],
                                 'keyword_name' => $key_id['keyword'],
