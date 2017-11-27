@@ -74,7 +74,7 @@
 
 //            ajax_request('POST', 'api/search_messages', 'json', '{"search":"{"MessageID":"'+msgId+'"}', function (d) {
 //            ajax_request('POST', 'api/search_messages', 'json', JSON.stringify(a),{'token':"{!!env('TOKEN')!!}"}, function (d) {
-            ajax_request('POST', 'api/search_messages', 'json', '{"MessageID":"'+msgId+'"}',{'token':"{!!env('TOKEN')!!}"}, function (d) {
+            ajax_request('POST', 'api/search_messages', 'json', '{"MessageID":"'+msgId+'"}',{'token':"5a16a5e50af69"}, function (d) {
 
                 if (d.success == false) {
                     for (var error in d.message) {

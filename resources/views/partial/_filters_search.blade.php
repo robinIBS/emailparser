@@ -13,19 +13,19 @@
             <div class="form-group">
                 <label class="control-label">Filter</label>
                 <!--<div class="col-md-2">-->
-                <select class="form-control" id="filter_select_list" name="filter_keyword">
+                <select class="form-control select2" id="filter_select_list" name="filter_keyword">
                     <option value="">Select Filter</option>
                 </select>
                 <!--</div>-->
             </div>
-            <!--            <div class="form-group required">
-                            <label class=" control-label">Filter Group</label>
-                            <div class="col-md-2">
-                            <select class="form-control" id="filter_group_select_list" name="filter_group">
-                                <option value="">Select Filter Group</option>
-                            </select>
-                            </div>
-                        </div>-->
+            <div class="form-group required">
+                <label class=" control-label">Filter Group</label>
+                <!--<div class="col-md-2">-->
+                    <select class="form-control select2" id="filter_group_select_list" name="filter_group">
+                        <option value="">Select Filter Group</option>
+                    </select>
+                <!--</div>-->
+            </div>
             <div class="form-group required">
                 <label class="control-label">From Date</label>
                 <!--<div class="col-md-2">-->
@@ -64,7 +64,7 @@
             });
             table.clear().draw();
 
-            ajax_request('POST', 'api/search_messages', 'json', JSON.stringify(arr), {'token': "{!!env('TOKEN')!!}"}, function (d) {
+            ajax_request('POST', 'api/search_messages', 'json', JSON.stringify(arr), {'token': "5a16a5e50af69"}, function (d) {
 
                 if (d.success == false) {
                     for (var error in d.message) {
@@ -93,7 +93,7 @@
         });
 
         //fill the filter dropdown
-        ajax_request('POST', 'api/keyword', 'json', '{"action":"list"}', {'token': "{!!env('TOKEN')!!}"}, function (d) {
+        ajax_request('POST', 'api/keyword', 'json', '{"action":"list"}', {'token': "5a16a5e50af69"}, function (d) {
             var options = '<option value="">Select Filter</option>';
             $.each(d.data, function (index, value) {
 
@@ -104,7 +104,7 @@
         });
 
         //fill the filter group dropdown
-        ajax_request('POST', 'api/keyword_group', 'json', '{"action":"list"}', {'token': "{!!env('TOKEN')!!}"}, function (d) {
+        ajax_request('POST', 'api/keyword_group', 'json', '{"action":"list"}', {'token': "5a16a5e50af69"}, function (d) {
             var options = '<option value="">Select Filter Group</option>';
             $.each(d.data, function (index, value) {
                 options += '<option value="' + value._id + '">' + value.name + '</option>';

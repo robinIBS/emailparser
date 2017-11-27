@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use PhpImap\Mailbox;
 use Elasticsearch\ClientBuilder;
 use App\EbayNotifications;
+use MongoDB\BSON\ObjectID;
 
 class RestController extends Controller {
 
@@ -136,7 +137,6 @@ class RestController extends Controller {
     }
 
     public function keyword() {
-//        print_r($this->data);die;
         $message = '';
         $insert_status = false;
         $group_id = '';
@@ -174,38 +174,26 @@ class RestController extends Controller {
             $error = $validator->getMessageBag()->toArray();
             return response()->json(array('success' => false, 'message' => $error), 200);
         } else {
-
+            $existArray = array();
             if ($this->data['action'] == 'add' || $this->data['action'] == 'update') {
                 $explode_keywords = explode(',', $this->data['keyword']);
 
                 //create array for inserting in to keywords table
                 foreach ($explode_keywords as $val) {
+
+                    //check if the keyword already exist
+                    $checkexist = FilterKeywords::where(array('keyword' => $val))->get();
+
+                    if (!empty($checkexist)) {
+                        
+                    } else {
+                        
+                    }
                     $post[] = array(
                         'keyword' => $val,
                         'search_in' => implode(',', $this->data['search_in']),
                     );
-
-                    if (!empty(strtolower($this->data['group'])) && strtolower($this->data['group']) != 'new' && strtolower($this->data['group']) != 'none') {
-                        $insert_keyword_group[] = [
-                            'group_id' => $this->data['group'],
-                            'keyword_id' => $val,
-                            'created_at' => date('Y-m-d H:i:s'),
-                        ];
-                    }
                 }
-
-                //create array for inserting into keyword group
-//                $post[] = array(
-//                    'keyword' => $this->data['keyword'],
-//                    'search_in' => implode(',', $this->data['search_in']),
-//                );
-//                    print_r($post);die;
-//                foreach ($this->data['search_in'] as $val) {
-//                    $post[] = array(
-//                        'keyword' => $this->data['keyword'],
-//                        'search_in' => strtoupper($val),
-//                    );
-//                }
             }
 
             switch (strtolower($this->data['action'])) {
@@ -250,10 +238,14 @@ class RestController extends Controller {
                     //if the group exist
                     if (!empty(strtolower($this->data['group'])) && strtolower($this->data['group']) != 'new' && strtolower($this->data['group']) != 'none') {
 
-                        if ($key_id->count() > 0) {
+                        $group_record = FunctionHelper::get_rec('filter_groups', array('matching_field' => '_id', 'value' => new ObjectID($this->data['group'])))->first();
+
+                        if (!empty($key_id)) {
                             $insert_keyword_group[] = [
                                 'group_id' => $this->data['group'],
+                                'group_name' => (count($group_record) > 0) ? $group_record['name'] : '',
                                 'keyword_id' => $key_id['_id'],
+                                'keyword_name' => $key_id['keyword'],
                                 'created_at' => date('Y-m-d H:i:s'),
                             ];
                         }
@@ -266,6 +258,8 @@ class RestController extends Controller {
                         $insert_keyword_group[] = [
                             'group_id' => $group_id,
                             'keyword_id' => $key_id['_id'],
+                            'keyword_name' => $key_id['keyword'],
+                            'group_name' => $this->data['group_name'],
                             'created_at' => date('Y-m-d H:i:s'),
                         ];
                     }
@@ -311,6 +305,10 @@ class RestController extends Controller {
             $messages['group_id.required'] = 'Please Select Group.';
         }
 
+        if ($this->data['action'] == 'fetch_rec') {
+            $rules['id'] = 'required';
+            $messages['id.required'] = 'Record Id required.';
+        }
 
 
         $status = 0;
@@ -331,6 +329,7 @@ class RestController extends Controller {
                         $message = "Group Created";
                         break;
                     case 'update':
+
                         //delete keywords
                         if (FunctionHelper::get_rec('filter_groups', array('matching_field' => '_id', 'value' => $this->data['group_id']))->count() == 0) {
                             return response()->json(array('success' => false, 'message' => 'Group not exist'), 200);
@@ -357,35 +356,26 @@ class RestController extends Controller {
                                                     ]
                                     );
                                 });
-//                        $list = FilterGroups::raw(function($collection) {
-//                                    return $collection->aggregate(
-//                                                    [
-//                                                            [
-//                                                            '$lookup' => [
-//                                                                'as' => 'keywords',
-//                                                                'from' => 'filter_group_keywords',
-//                                                                'foreignField' => 'group_id',
-//                                                                'localField' => '_id'
-//                                                            ],
-//                                                        ],
-////                                                            [
-////                                                            '$unwind' => [
-////                                                                'path' => '$keywords',
-////                                                                'preserveNullAndEmptyArrays' => true
-////                                                            ],
-////                                                        ],
-////                                                            [
-////                                                            '$lookup' => [
-////                                                                'as' => 'key',
-////                                                                'from' => 'filter_keywords',
-////                                                                'foreignField' => '_id',
-////                                                                'localField' => 'keywords.keyword_id'
-////                                                            ]
-////                                                        ]
-//                                                    ]
-//                                    );
-//                                });
 
+                        return response()->json(array('success' => true, 'data' => $list), 200);
+                        break;
+                    case 'fetch_rec':
+
+                        $list = FilterGroups::raw(function($collection) {
+                                    return $collection->aggregate(
+                                                    [
+                                                            ['$match' => ["_id" => new ObjectID($this->data['id'])]],
+                                                            [
+                                                            '$lookup' => [
+                                                                'as' => 'keywords',
+                                                                'from' => 'filter_group_keywords',
+                                                                'foreignField' => 'group_id',
+                                                                'localField' => '_id'
+                                                            ]
+                                                        ]
+                                                    ]
+                                    );
+                                });
 
                         return response()->json(array('success' => true, 'data' => $list), 200);
                         break;
@@ -584,86 +574,51 @@ class RestController extends Controller {
             }
 
 
-            //filter from-date
-//            if (!empty($this->data['filter_from_date'])) {
-//                $wild_card[] = [
-//                    'wildcard' => [
-//                        $this->array_map['date'] => [
-//                            'value' => strtolower('*' . $this->data['filter_from_date'] . '*')
-//                        ]
-//                    ],
-//                ];
-//            }
-//
-//            //filter to-date
-//            if (!empty($this->data['filter_to_date'])) {
-//                $wild_card[] = [
-//                    'wildcard' => [
-//                        $this->array_map['date'] => [
-//                            'value' => strtolower('*' . $this->data['filter_to_date'] . '*')
-//                        ]
-//                    ],
-//                ];
-//            }
+
             ///create the filter group wildcard seratch array
             if (!empty($this->data['filter_group'])) {
-//                $keyword = FilterGroups::where(array('_id' => $this->data['filter_group']))->first();
-//                $explode = explode(',', $keyword->search_in);
-//                $suffixed_array = preg_filter('/$/', ' "' . $keyword->keyword . '"', $explode);
-//
-//                $search_criteria = implode(' ', $suffixed_array);
+
+                $list = FilterGroupKeywords::raw(function($collection) {
+                            return $collection->aggregate(
+                                            [
+                                                    ['$match' => ["group_id" => new ObjectID($this->data['filter_group'])]],
+                                                    [
+                                                    '$lookup' => [
+                                                        'as' => 'keywords',
+                                                        'from' => 'filter_keywords',
+                                                        'foreignField' => '_id',
+                                                        'localField' => 'keyword_id'
+                                                    ]
+                                                ]
+                                            ]
+                            );
+                        });
+//                echo '<pre>';
+//                print_r(json_encode($list));
+//                die;
+//                echo json_encode($list);
+//                die;
+//                
+                //create wildccard search for filter group
+                foreach ($list as $value) {
+                    $keyword_list = FilterKeywords::where(array('_id' => new ObjectID($value->keyword_id)))->first();
+
+                    if ($keyword_list->count() > 0) {
+                        $explode = explode(',', $keyword_list->search_in);
+
+                        foreach ($explode as $val) {
+
+                            $wild_card[] = [
+                                'wildcard' => [
+                                    $this->array_map[strtolower($val)] => [
+                                        'value' => strtolower($keyword_list->keyword)
+                                    ]
+                                ],
+                            ];
+                        }
+                    }
+                }
             }
-
-
-//            echo '<pre>';
-//            print_r($wild_card);die;
-//            if (!empty($subject)) {
-//                //entry for subject field
-//                $wild_card[] = [
-//                    'wildcard' => [
-//                        'Messages.Subject' => [
-//                            'value' => strtolower($subject)
-//                        ]
-//                    ],
-//                ];
-//            } else if (!empty($from)) {
-//
-//                //entry for from field
-//                $wild_card[] = [
-//                    'wildcard' => [
-//                        'Messages.Sender' => [
-//                            'value' => strtolower($from)
-//                        ]
-//                    ],
-//                ];
-//            } else if (!empty($to)) {
-//                //entry for to field
-//                $wild_card[] = [
-//                    'wildcard' => [
-//                        'RecipientUserID' => [
-//                            'value' => strtolower($to)
-//                        ]
-//                    ],
-//                ];
-//            } else if (!empty($MessageID)) {
-//                //entry for to field
-//                $wild_card[] = [
-//                    'wildcard' => [
-//                        'Messages.MessageID' => [
-//                            'value' => strtolower($MessageID)
-//                        ]
-//                    ],
-//                ];
-//            } else if (!empty($body)) {
-//                //entry for to field
-//                $wild_card[] = [
-//                    'wildcard' => [
-//                        'Messages.Text' => [
-//                            'value' => strtolower($body)
-//                        ]
-//                    ],
-//                ];
-//            }
 
             if (!empty($this->data['MessageID'])) {
                 //entry for to field
@@ -675,29 +630,7 @@ class RestController extends Controller {
                     ],
                 ];
             }
-//            if (!empty($wild_card)) {
-//            $params = [
-//                'index' => 'data_search',
-//                'type' => 'data',
-//                'body' => [
-//                    'query' => [
-//                        'bool' => [
-//                            'should' => [
-//                                $wild_card,
-//                            ],
-//                            'must' => [
-//                                'range' => [
-//                                    $this->array_map['date'] => [
-//                                        'gte' => date('Y-m-19'),
-//                                        'lt' => date('Y-m-21'),
-////                                        'format' => 'epoch_millis'
-//                                    ]
-//                                ]
-//                            ]
-//                        ]
-//                    ]
-//                ]
-//            ];
+
             //default init
             $params = [
                 'index' => 'data_search',
@@ -738,11 +671,13 @@ class RestController extends Controller {
         //get the last message id
         $last_id = DB::collection('last_message_ids')->orderBy('_id', 'desc')->first();
 
+        //list the ebay notifications
         $lists = EbayNotifications::where(array('NotificationEventName' => 'MyMessageseBayMessage'))->orWhere(array('NotificationEventName' => 'MyMessagesM2MMessage'));
         if (count($last_id) > 0) {
             $lists->where('_id', '>', $last_id['msg_id']);
         }
-//        print_r($lists);die;
+
+        //insert the data in the form of chunks
         $lists->chunk(200, function($list) use($params, &$response) {
 
             foreach ($list as $val) {
@@ -764,8 +699,8 @@ class RestController extends Controller {
                 $timestamp = $val['Timestamp'];
             }
 
-            //insert message id
-            $insert = DB::collection('last_message_ids')->insert(array('msg_id' => $msg_id, 'timestamp' => $timestamp));
+            //Record last message id
+            $insert_last_message_id = DB::collection('last_message_ids')->insert(array('msg_id' => $msg_id, 'timestamp' => $timestamp));
 
             //create elastic search data
             $response = $this->client->bulk($params);

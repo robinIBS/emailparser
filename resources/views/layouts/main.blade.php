@@ -17,6 +17,7 @@
         <link href="{{ asset('datatable/jquery.dataTables.min.css') }}" rel="stylesheet">
         <link href="{{ asset('font-awesome/css/font-awesome.css') }}" rel="stylesheet">
         <link href="{{ asset('css/jquery-ui.css') }}" rel="stylesheet">
+        <link href="{{ asset('css/select2.min.css') }}" rel="stylesheet">
     </head>
     <body>
         <div id="app">
@@ -109,13 +110,17 @@
         <script src="{{ asset('js/jquery.serializeObject.min.js') }}"></script>
         <script src="{{ asset('js/script.js') }}"></script>
         <script src="{{ asset('js/jquery-ui.js') }}"></script>
+        <script src="{{ asset('js/select2.min.js') }}"></script>
         <!--<script src="{{ asset('js/bootstrap.min.js') }}"></script>-->
         @stack('scripts')
         <script>
                         $(document).ready(function () {
                             $(function () {
-                                $(".datepicker").datepicker();
+                                $(".datepicker").datepicker({ dateFormat: 'yy-mm-dd' });
                             });
+                            
+                            $('.select2').select2();
+                            
                         });
         </script>
     </body>

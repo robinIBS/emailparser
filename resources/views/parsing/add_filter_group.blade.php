@@ -18,10 +18,10 @@
                         </div>
 
                         <div class="form-group required">
-                            <label class="col-md-2 control-label">Search In</label>
+                            <label class="col-md-2 control-label">Keywords</label>
 
                             <div class="col-md-6">
-                                <select class="form-control" multiple="true" name="keyword[]" id="keywords">
+                                <select class="form-control select2" multiple="true" name="keyword[]" id="keywords">
 
                                 </select>
                             </div>
@@ -36,7 +36,7 @@
                     </div>
                     {{ Form::close() }}
                 </div>
-                <div class="panel-body table-responsive">
+<!--                <div class="panel-body table-responsive">
 
                     <table class="table table-bordered datatable" id="filter_group_table">
                         <thead>
@@ -50,9 +50,9 @@
                                 <th>
                                     Keywords
                                 </th>
-                               <!--                                <th>
+                                                               <th>
                                                                    Action
-                                                               </th>-->
+                                                               </th>
                             </tr>
 
                         </thead>
@@ -61,7 +61,7 @@
                         </tbody>
 
                     </table>
-                </div>
+                </div>-->
             </div>
         </div>
     </div>
@@ -77,7 +77,8 @@
             arr['action'] = 'add';
 
             //ADD Filter
-            ajax_request('POST', 'api/keyword_group', 'json', JSON.stringify(arr), {'token': "{!!env('TOKEN')!!}"}, function (d) {
+            ajax_request('POST', 'api/keyword_group', 'json', JSON.stringify(arr), {'token': "5a16a5e50af69"}, function (d) {
+//            ajax_request('POST', 'api/keyword_group', 'json', JSON.stringify(arr), {'token': "{!!env('TOKEN')!!}"}, function (d) {
                 if (d.success == false) {
                     for (var error in d.message) {
                         $('#errors').append(d.message[error] + '<br>');
@@ -94,7 +95,7 @@
         });
 
         //fill the filter group dropdown
-        ajax_request('POST', 'api/keyword', 'json', '{"action":"list"}', {'token': "{!!env('TOKEN')!!}"}, function (d) {
+        ajax_request('POST', 'api/keyword', 'json', '{"action":"list"}', {'token': "5a16a5e50af69"}, function (d) {
             var options = '';
             $.each(d.data, function (index, value) {
                 options += '<option value="' + value._id + '">' + value.keyword + '</option>';
@@ -104,7 +105,7 @@
         });
 
         function refresh_table() {
-            ajax_request('POST', 'api/keyword_group', 'json', '{"action":"list"}', {'token': "{!!env('TOKEN')!!}"}, function (d) {
+            ajax_request('POST', 'api/keyword_group', 'json', '{"action":"list"}', {'token': "5a16a5e50af69"}, function (d) {
 
                 if (d.success == false) {
                     for (var error in d.message) {
