@@ -36,7 +36,7 @@
                     </div>
                     {{ Form::close() }}
                 </div>
-<!--                <div class="panel-body table-responsive">
+                <div class="panel-body table-responsive">
 
                     <table class="table table-bordered datatable" id="filter_group_table">
                         <thead>
@@ -50,9 +50,9 @@
                                 <th>
                                     Keywords
                                 </th>
-                                                               <th>
+<!--                                                               <th>
                                                                    Action
-                                                               </th>
+                                                               </th>-->
                             </tr>
 
                         </thead>
@@ -61,7 +61,7 @@
                         </tbody>
 
                     </table>
-                </div>-->
+                </div>
             </div>
         </div>
     </div>
@@ -88,6 +88,7 @@
                     $('#success-msg').append(d.message);
                     $('.success-div').show();
                     $("#create_filter_group_form")[0].reset();
+                    refresh_table();
                 }
 
             });
@@ -105,6 +106,8 @@
         });
 
         function refresh_table() {
+            //clear the table
+            table.clear().draw();
             ajax_request('POST', 'api/keyword_group', 'json', '{"action":"list"}', {'token': "5a16a5e50af69"}, function (d) {
 
                 if (d.success == false) {
@@ -120,9 +123,9 @@
                         $.each(d.data, function (index, value) {
 
                             $.each(value.keywords, function (i, v) {
-                                keywords += v.keyword_id+',';
+                                keywords += v.keyword_name+',';
                             });
-
+                            keywords = keywords.substring(0, keywords.length - 1);
                             table.row.add([
                                 sr,
                                 value.name,
@@ -130,6 +133,7 @@
 //                                '<a href="javascript:void(0)" class="view_message_link" msgID="' + value._source.Messages.MessageID + '"><i class="fa fa-eye" aria-hidden="true"></i></a>'
                             ]).draw(false);
                             sr++;
+                            keywords = '';
                         });
                     }
                 }

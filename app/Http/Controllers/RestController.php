@@ -177,11 +177,11 @@ class RestController extends Controller {
             $existArray = array();
             if ($this->data['action'] == 'add' || $this->data['action'] == 'update') {
                 $explode_keywords = explode(',', $this->data['keyword']);
-                
+
                 //check only the unique keywords in array
                 $unique_keyword = FunctionHelper::has_dupes($explode_keywords);
 //                print_r($unique_keyword);die;
-                if($unique_keyword==1){
+                if ($unique_keyword == 1) {
                     return response()->json(array('success' => false, 'message' => 'only unique keywords allowed'), 200);
                 }
                 //create array for inserting in to keywords table
@@ -190,7 +190,7 @@ class RestController extends Controller {
                     //check if the keyword already exist
                     $checkexist = FilterKeywords::where(array('keyword' => $val))->get();
 
-                    if ($checkexist->count()>0) {
+                    if ($checkexist->count() > 0) {
                         $existArray[] = $val;
                     } else {
                         $post[] = array(
@@ -323,14 +323,18 @@ class RestController extends Controller {
 
 
         $status = 0;
+        
         $validator = Validator::make($this->data, $rules, $messages);
         $error = array();
         if ($validator->fails()) {
             $error = $validator->getMessageBag()->toArray();
             return response()->json(array('success' => false, 'message' => $error), 200);
         } else {
+            $group_record = array();
+            
             if (strtolower($this->data['action']) == 'add' || strtolower($this->data['action']) == 'update') {
                 $post['name'] = $this->data['name'];
+//                $group_record = FunctionHelper::get_rec('filter_groups', array('matching_field' => '_id', 'value' => new ObjectID($this->data['group_id'])))->first();
             }
 //            DB::beginTransaction();
             try {
@@ -416,12 +420,18 @@ class RestController extends Controller {
                     //insert the group keywords
 
                     foreach ($this->data['keyword'] as $key) {
+                        
+                        $key_id = FunctionHelper::get_rec('filter_keywords', array('matching_field' => '_id', 'value' => new ObjectID($key)))->first();
+//                        print_r($key);die;
                         $post_array[] = [
                             'group_id' => $status,
-                            'keyword_id' => $key,
+                            'group_name' => (count($this->data['name']) > 0) ? $this->data['name'] : '',
+                            'keyword_id' => new ObjectID($key),
+                            'keyword_name' => $key_id['keyword'],
                             'created_at' => date('Y-m-d H:i:s'),
                         ];
                     }
+//                    print_r($post_array);die;
 
                     $insert_status = FilterGroupKeywords::insert($post_array);
 
